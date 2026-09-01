@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محاكاة الهيكل المؤسسي الحي | منصة مسار MASAR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --navy-deep:#0B2A3D;
+    --navy:#123C52;
+    --navy-soft:#1E5468;
+    --teal:#0E9A8A;
+    --teal-bright:#14B8A4;
+    --teal-light:#5FD4C4;
+    --teal-pale:#CFEFEA;
+    --amber:#E8A23D;
+    --amber-soft:#F4C98A;
+    --amber-pale:#FBEAD0;
+    --neutral-fog:#94A3AD;
+    --neutral-fog-light:#C4CCD1;
+    --bg:#F7F9F9;
+    --bg-card:#FFFFFF;
+    --ink:#10242E;
+    --ink-soft:#4B6068;
+    --line:#DDE5E5;
+    --danger:#D9624B;
+    --danger-pale:#FBE4DE;
+
+    --font-display:'Tajawal', 'IBM Plex Sans Arabic', sans-serif;
+    --font-body:'IBM Plex Sans Arabic', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    width:100%;
+    min-height:100vh;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(14,154,138,0.06), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(11,42,61,0.05), transparent 45%);
+  }
+
+  ::selection{background:var(--teal-light); color:var(--navy-deep);}
+
+  /* ===== Top Bar ===== */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(247,249,249,0.94);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:9px;
+    background:linear-gradient(135deg, var(--teal-bright), var(--navy));
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:var(--font-display); font-weight:900; font-size:15px;
+    flex-shrink:0;
+  }
+  .brand-text{display:flex; flex-direction:column; line-height:1.15;}
+  .brand-text b{font-family:var(--font-display); font-weight:700; font-size:14.5px; color:var(--navy-deep);}
+  .brand-text span{font-size:11px; color:var(--ink-soft); font-family:var(--font-mono); letter-spacing:.3px;}
+
+  .scenario-badge{
+    font-family:var(--font-mono); font-size:11px; color:var(--teal);
+    background:var(--teal-pale); border:1px solid rgba(14,154,138,0.25);
+    padding:5px 12px; border-radius:20px; white-space:nowrap;
+  }
+
+  /* ===== Progress rail ===== */
+  .progress-rail{
+    max-width:980px; margin:0 auto; padding:18px 28px 0;
+  }
+  .progress-track{
+    display:flex; align-items:center; gap:0;
+  }
+  .progress-node{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    position:relative; flex:1;
+  }
+  .progress-circle{
+    width:34px; height:34px; border-radius:50%;
+    background:#fff; border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);
+    transition:.3s; z-index:2;
+  }
+  .progress-node.done .progress-circle{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .progress-node.active .progress-circle{background:var(--navy-deep); border-color:var(--navy-deep); color:#fff; box-shadow:0 0 0 5px rgba(11,42,61,0.12);}
+  .progress-label{font-size:11px; color:var(--ink-soft); text-align:center; max-width:90px; line-height:1.4;}
+  .progress-node.active .progress-label{color:var(--navy-deep); font-weight:600;}
+  .progress-line{
+    flex:1; height:2px; background:var(--line); margin:0 -2px; margin-bottom:24px;
+    position:relative; top:-17px; z-index:1;
+  }
+  .progress-line.done{background:var(--teal);}
+
+  @media(max-width:760px){
+    .progress-label{display:none;}
+    .progress-rail{padding:14px 16px 0;}
+  }
+
+  /* ===== Stage wrap ===== */
+  .stage-wrap{
+    max-width:980px; margin:0 auto; padding:28px 28px 80px;
+  }
+  @media(max-width:600px){ .stage-wrap{padding:18px 14px 60px;} }
+
+  .screen{display:none;}
+  .screen.show{display:block; animation:fadeSlideIn .4s ease;}
+  @keyframes fadeSlideIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  .screen-head{margin-bottom:22px;}
+  .screen-eyebrow{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.5px;
+    color:var(--teal); text-transform:uppercase; margin-bottom:8px; display:block;
+  }
+  .screen-head h1{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(22px,3.2vw,30px);
+    color:var(--navy-deep); line-height:1.3; margin-bottom:10px;
+  }
+  .screen-head p{font-size:14.5px; color:var(--ink-soft); line-height:1.85; max-width:680px;}
+
+  .card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:20px;
+    padding:24px; box-shadow:0 16px 50px -28px rgba(11,42,61,0.3);
+    margin-bottom:18px;
+  }
+  .card-dark{
+    background:linear-gradient(165deg, var(--navy-deep), var(--navy));
+    border-color:transparent;
+  }
+
+  /* ===== Welcome screen ===== */
+  .welcome-hero{
+    text-align:center; padding:30px 10px 10px;
+  }
+  .welcome-hero .screen-eyebrow{justify-content:center; display:flex; align-items:center; gap:8px;}
+  .welcome-hero .screen-eyebrow::before, .welcome-hero .screen-eyebrow::after{
+    content:''; width:24px; height:1px; background:var(--teal);
+  }
+  .welcome-hero h1{font-size:clamp(26px,4vw,38px);}
+  .welcome-hero h1 em{
+    font-style:normal; color:var(--teal);
+    background:linear-gradient(180deg, transparent 65%, var(--teal-pale) 65%);
+  }
+  .welcome-hero p{max-width:620px; margin:0 auto;}
+
+  .journey-preview{
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+    margin:28px 0 8px;
+  }
+  .journey-chip{
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:10px 16px; font-size:12.5px; color:var(--ink-soft);
+  }
+  .journey-chip b{color:var(--navy-deep); font-weight:600;}
+  .journey-chip-icon{
+    width:24px; height:24px; border-radius:7px; background:var(--teal-pale); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .journey-chip-icon svg{width:13px; height:13px;}
+  .journey-sep{color:var(--neutral-fog); font-size:14px;}
+
+  .welcome-hero p.welcome-desc{
+    max-width:680px; margin:0 auto 28px;
+    font-size:15px; color:var(--ink-soft); line-height:2;
+    padding:18px 22px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:14px;
+    text-align:right;
+  }
+
+  .how-to-section{
+    background:var(--bg); border:1px solid var(--line); border-radius:16px;
+    padding:20px 22px; margin:0 auto 28px; max-width:680px; text-align:right;
+  }
+  .how-to-title{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--font-display); font-weight:700; font-size:14px;
+    color:var(--navy-deep); margin-bottom:16px;
+  }
+  .how-to-title svg{width:16px; height:16px; color:var(--teal); flex-shrink:0;}
+  .how-to-steps{display:flex; flex-direction:column; gap:14px;}
+  .how-step{display:flex; align-items:flex-start; gap:12px;}
+  .how-step-num{
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    background:var(--navy-deep); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:13px;
+    margin-top:1px;
+  }
+  .how-step-text{font-size:13px; color:var(--ink-soft); line-height:1.8;}
+  .how-step-text b{display:block; color:var(--navy-deep); font-weight:600; margin-bottom:2px; font-size:13.5px;}
+
+  .start-note{
+    margin-top:12px; font-size:11.5px; color:var(--neutral-fog);
+    font-family:var(--font-mono);
+  }
+  .primary-btn{
+    display:inline-flex; align-items:center; gap:9px;
+    background:var(--navy-deep); color:#fff; border:none; border-radius:13px;
+    padding:15px 28px; font-family:var(--font-body); font-weight:600; font-size:14.5px;
+    cursor:pointer; transition:.2s; box-shadow:0 14px 30px -12px rgba(11,42,61,0.5);
+  }
+  .primary-btn:hover{background:var(--navy); transform:translateY(-1px);}
+  .primary-btn svg{width:15px; height:15px;}
+  .primary-btn.ghost{
+    background:#fff; color:var(--navy-deep); border:1.5px solid var(--line);
+    box-shadow:none;
+  }
+  .primary-btn.ghost:hover{border-color:var(--teal); color:var(--teal);}
+  .primary-btn:disabled{opacity:.4; cursor:not-allowed; transform:none;}
+
+  /* ===== Classroom grid (Step: class) ===== */
+  .instruction-banner{
+    display:flex; gap:12px; align-items:flex-start;
+    background:var(--teal-pale); border:1px solid rgba(14,154,138,0.25);
+    border-radius:14px; padding:14px 16px; margin-bottom:20px;
+    font-size:13px; color:var(--navy-deep); line-height:1.8;
+  }
+  .instruction-banner svg{width:18px; height:18px; flex-shrink:0; margin-top:1px; color:var(--teal);}
+
+  .class-meta-row{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    margin-bottom:16px;
+  }
+  .class-meta-row b{font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--navy-deep);}
+  .class-meta-row span{font-size:12px; color:var(--ink-soft);}
+
+  .student-grid{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:10px;
+    margin-bottom:6px;
+  }
+  @media(max-width:680px){ .student-grid{grid-template-columns:repeat(4,1fr);} }
+  @media(max-width:420px){ .student-grid{grid-template-columns:repeat(3,1fr);} }
+
+  .student-tile{
+    background:#fff; border:1.5px solid var(--line); border-radius:13px;
+    padding:10px 8px 9px; text-align:center; cursor:pointer;
+    transition:.18s; user-select:none; position:relative;
+  }
+  .student-tile:hover{border-color:var(--teal); transform:translateY(-2px); box-shadow:0 10px 20px -12px rgba(14,154,138,0.4);}
+  .student-tile:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+  .student-tile.lvl-high{border-color:rgba(232,162,61,0.5); background:var(--amber-pale);}
+  .student-tile.lvl-mid{border-color:rgba(95,212,196,0.45); background:#F0FBF9;}
+  .student-tile.lvl-low{border-color:rgba(14,154,138,0.35); background:#F4FBFA;}
+  .student-tile.just-changed{animation:pulseTile .5s ease;}
+  @keyframes pulseTile{
+    0%{box-shadow:0 0 0 0 rgba(14,154,138,0.5);}
+    100%{box-shadow:0 0 0 10px rgba(14,154,138,0);}
+  }
+
+  .student-avatar{
+    width:30px; height:30px; border-radius:50%; margin:0 auto 6px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:12px; color:#fff;
+  }
+  .student-name{font-size:11px; font-weight:600; color:var(--navy-deep); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .student-score{font-family:var(--font-mono); font-size:13px; font-weight:700;}
+  .lvl-high .student-score{color:var(--amber);}
+  .lvl-mid .student-score{color:var(--teal-light); filter:brightness(0.85);}
+  .lvl-low .student-score{color:var(--teal);}
+
+  .student-hint{font-size:9.5px; color:var(--ink-soft); margin-top:2px;}
+
+  .legend-row{
+    display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap;
+    margin-top:18px; padding-top:16px; border-top:1px dashed var(--line);
+  }
+  .legend-item{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-soft);}
+  .legend-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+
+  /* Live stat bar under classroom */
+  .live-stat-bar{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    background:var(--bg); border:1px solid var(--line); border-radius:14px;
+    padding:16px 20px; margin-top:18px;
+  }
+  .live-stat{display:flex; flex-direction:column; gap:2px;}
+  .live-stat .num{font-family:var(--font-display); font-weight:800; font-size:24px; color:var(--navy-deep); transition:color .3s;}
+  .live-stat .num.alert{color:var(--amber);}
+  .live-stat .lbl{font-size:11px; color:var(--ink-soft);}
+  .live-stat-div{width:1px; height:34px; background:var(--line);}
+
+  /* Threshold gauge */
+  .gauge-wrap{flex:1; min-width:200px;}
+  .gauge-label-row{display:flex; justify-content:space-between; font-size:11px; color:var(--ink-soft); margin-bottom:18px;}
+  .gauge-track{
+    height:10px; border-radius:6px; background:#fff; border:1px solid var(--line);
+    position:relative; overflow:visible;
+  }
+  .gauge-fill{
+    position:absolute; top:0; right:0; bottom:0;
+    height:100%; border-radius:6px; background:linear-gradient(90deg, var(--teal-light), var(--teal));
+    transition:width .4s ease, background .4s ease;
+  }
+  .gauge-fill.over-threshold{background:linear-gradient(90deg, var(--amber-soft), var(--amber));}
+  .gauge-threshold-mark{
+    position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--danger);
+  }
+  .gauge-threshold-mark::after{
+    content:'حدّ العتبة'; position:absolute; bottom:-19px; right:50%; transform:translateX(50%);
+    font-size:9px; color:var(--danger); white-space:nowrap; font-family:var(--font-mono);
+  }
+
+  /* ===== Decision card (teacher / principal / ministry) ===== */
+  .decision-engine{
+    border-radius:18px; padding:22px 24px; margin-bottom:18px;
+    transition:background .35s, border-color .35s;
+  }
+  .decision-engine.state-idle{
+    background:#F4F7F7; border:1.5px dashed var(--neutral-fog-light);
+  }
+  .decision-engine.state-active{
+    background:linear-gradient(165deg, #FFF9F0, #FEF3E2);
+    border:1.5px solid rgba(232,162,61,0.4);
+  }
+  .decision-engine.state-ok{
+    background:linear-gradient(165deg, #F2FBF9, #E7F8F5);
+    border:1.5px solid rgba(14,154,138,0.3);
+  }
+
+  .decision-head{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .decision-icon{
+    width:42px; height:42px; border-radius:12px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .decision-icon svg{width:21px; height:21px;}
+  .state-idle .decision-icon{background:#fff; color:var(--neutral-fog); border:1px solid var(--line);}
+  .state-active .decision-icon{background:var(--amber); color:#fff;}
+  .state-ok .decision-icon{background:var(--teal); color:#fff;}
+
+  .decision-title{font-family:var(--font-display); font-weight:700; font-size:15.5px; color:var(--navy-deep);}
+  .decision-sub{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+
+  .rule-box{
+    background:rgba(255,255,255,0.6); border-radius:11px; padding:13px 15px;
+    font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft); line-height:2;
+    margin-bottom:14px; border:1px solid rgba(0,0,0,0.05);
+  }
+  .rule-box .cond-true{color:var(--amber); font-weight:600;}
+  .rule-box .cond-false{color:var(--teal); font-weight:600;}
+
+  .decision-output{
+    font-size:13.5px; line-height:1.9; color:var(--ink);
+  }
+  .decision-output b{color:var(--navy-deep);}
+  .affected-names{
+    display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;
+  }
+  .affected-chip{
+    background:#fff; border:1px solid var(--amber); color:#9A5F12;
+    font-size:11.5px; padding:5px 12px; border-radius:20px; font-weight:600;
+  }
+  .decision-output.ok .affected-chip{border-color:var(--teal); color:var(--teal);}
+
+  .action-list{margin-top:14px; display:flex; flex-direction:column; gap:8px;}
+  .action-item{
+    display:flex; align-items:flex-start; gap:9px; font-size:12.5px; color:var(--ink);
+    background:rgba(255,255,255,0.7); padding:10px 12px; border-radius:9px;
+  }
+  .action-item svg{width:15px; height:15px; flex-shrink:0; margin-top:2px; color:var(--amber);}
+  .decision-output.ok .action-item svg{color:var(--teal);}
+
+  /* ===== School / Ministry aggregate views ===== */
+  .agg-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px;
+  }
+  @media(max-width:680px){ .agg-grid{grid-template-columns:repeat(2,1fr);} }
+  .agg-tile{
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px;
+    text-align:center;
+  }
+  .agg-tile .num{font-family:var(--font-display); font-weight:800; font-size:26px; color:var(--navy-deep); transition:.3s;}
+  .agg-tile .num.warn{color:var(--amber);}
+  .agg-tile .lbl{font-size:11px; color:var(--ink-soft); margin-top:4px;}
+
+  .mini-class-strip{
+    display:flex; gap:5px; flex-wrap:wrap; justify-content:center; margin-top:10px;
+  }
+  .mini-dot{width:9px; height:9px; border-radius:50%;}
+
+  .ministry-card{
+    background:linear-gradient(165deg, var(--navy-deep), var(--navy));
+    border-radius:20px; padding:26px; color:#fff;
+  }
+  .ministry-card .agg-tile{
+    background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.14);
+  }
+  .ministry-card .agg-tile .num{color:#fff;}
+  .ministry-card .agg-tile .num.warn{color:var(--amber-soft);}
+  .ministry-card .agg-tile .lbl{color:rgba(255,255,255,0.65);}
+
+  .index-bars{display:flex; flex-direction:column; gap:11px; margin-top:18px;}
+  .index-bar-row{display:flex; align-items:center; gap:10px;}
+  .index-bar-label{font-size:11.5px; color:rgba(255,255,255,0.75); width:120px; flex-shrink:0;}
+  .index-bar-track{flex:1; height:9px; background:rgba(255,255,255,0.12); border-radius:6px; overflow:hidden;}
+  .index-bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg, var(--teal-light), var(--teal-bright)); transition:width .5s ease;}
+  .index-bar-fill.is-target{background:linear-gradient(90deg, var(--amber-soft), var(--amber));}
+  .index-bar-val{font-family:var(--font-mono); font-size:11.5px; color:#fff; width:36px;}
+
+  /* ===== Nav buttons ===== */
+  .nav-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:26px; flex-wrap:wrap;
+  }
+  .nav-row-left{display:flex; gap:10px;}
+
+  /* ===== Final summary screen: 3 columns ===== */
+  .summary-grid{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;
+  }
+  @media(max-width:820px){ .summary-grid{grid-template-columns:1fr;} }
+
+  .summary-col{
+    background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .summary-col.col-ministry{
+    background:linear-gradient(165deg, var(--navy-deep), var(--navy)); color:#fff; border:none;
+  }
+  .summary-col-head{display:flex; align-items:center; gap:9px;}
+  .summary-col-icon{
+    width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .summary-col-icon svg{width:17px; height:17px;}
+  .col-class .summary-col-icon{background:var(--teal-pale); color:var(--teal);}
+  .col-school .summary-col-icon{background:#E4ECEF; color:var(--navy-soft);}
+  .col-ministry .summary-col-icon{background:rgba(255,255,255,0.12); color:#fff;}
+  .summary-col-head b{font-family:var(--font-display); font-weight:700; font-size:14px;}
+  .col-ministry .summary-col-head b{color:#fff;}
+
+  .summary-stat{text-align:center; padding:10px 0;}
+  .summary-stat .num{font-family:var(--font-display); font-weight:800; font-size:30px; color:var(--navy-deep);}
+  .col-ministry .summary-stat .num{color:#fff;}
+  .summary-stat .lbl{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .col-ministry .summary-stat .lbl{color:rgba(255,255,255,0.65);}
+
+  .summary-decision{
+    background:var(--bg); border-radius:12px; padding:12px 14px; font-size:12px; line-height:1.8;
+    border-right:3px solid var(--teal);
+  }
+  .summary-decision.is-active{border-right-color:var(--amber); background:var(--amber-pale);}
+  .col-ministry .summary-decision{background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.9);}
+  .col-ministry .summary-decision.is-active{background:rgba(232,162,61,0.18);}
+
+  .summary-arrow-row{
+    display:flex; align-items:center; justify-content:center; padding:4px 0;
+    color:var(--neutral-fog);
+  }
+  @media(min-width:821px){ .summary-arrow-row{display:none;} }
+
+  .replay-banner{
+    text-align:center; margin-top:24px; padding:20px; background:var(--bg-card);
+    border:1px solid var(--line); border-radius:16px;
+  }
+  .replay-banner p{font-size:13px; color:var(--ink-soft); margin-bottom:14px; line-height:1.8;}
+
+  .foot{
+    text-align:center; padding:20px 28px 10px;
+    font-size:11.5px; color:var(--ink-soft);
+  }
+  .foot b{color:var(--navy-deep);}
+
+  /* Focus visibility */
+  button:focus-visible, select:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--neutral-fog-light); border-radius:8px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">م</div>
+      <div class="brand-text">
+        <b>منصّة مسار</b>
+        <span>MASAR PLATFORM</span>
+      </div>
+    </div>
+    <div class="scenario-badge">بيانات تجريبية &middot; بدون اتصال</div>
+  </div>
+
+  <div class="progress-rail" id="progressRail"></div>
+
+  <div class="stage-wrap">
+
+    <!-- ============ SCREEN 0: WELCOME ============ -->
+    <div class="screen show" id="screen-welcome">
+      <div class="card welcome-hero">
+        <span class="screen-eyebrow">محاكاة الهيكل المؤسسي الحي</span>
+        <h1>كيف تتحوّل بيانات <em>طالب واحد</em><br>إلى قرار على مستوى الوزارة؟</h1>
+
+        <p class="welcome-desc">
+          يُجسّد هذا النموذج التفاعلي الآلية الفعلية التي تعمل بها منصة مسار: حين يتغيّر مستوى أداء طالب في الفصل، تنتقل هذه البيانات تلقائياً عبر ثلاثة مستويات مؤسسية متتالية — المعلّم، ثم مدير المدرسة، ثم الوزارة — وفي كل مستوى تُفعِّل قاعدة قرار واضحة بناءً على عتبة رقمية محددة مسبقاً. النتيجة: قرار تربوي مبني على دليل، لا على تقدير شخصي.
+        </p>
+
+        <div class="how-to-section">
+          <div class="how-to-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            كيف تستخدم هذا النموذج؟
+          </div>
+          <div class="how-to-steps">
+            <div class="how-step">
+              <div class="how-step-num">١</div>
+              <div class="how-step-text">
+                <b>عدّل مستوى الطلاب</b>
+                انقر على بطاقة أي طالب في الفصل لتغيير مستوى أدائه بين ثلاث حالات: فجوة مرتفعة، فجوة متوسطة، أو متمكّن.
+              </div>
+            </div>
+            <div class="how-step">
+              <div class="how-step-num">٢</div>
+              <div class="how-step-text">
+                <b>راقب القرار يتشكّل تلقائياً</b>
+                مع كل تغيير، يُعيد النظام حساب مؤشرات الفصل فوراً ويحدد ما إذا كانت عتبة القرار قد تجاوزت حدّها في كل مستوى.
+              </div>
+            </div>
+            <div class="how-step">
+              <div class="how-step-num">٣</div>
+              <div class="how-step-text">
+                <b>تنقّل بين المستويات</b>
+                اضغط "التالي" بعد كل شاشة لترى كيف يُترجَم نفس الرقم إلى قرار مختلف عند المعلّم، وعند المدير، وعند الوزارة.
+              </div>
+            </div>
+            <div class="how-step">
+              <div class="how-step-num">٤</div>
+              <div class="how-step-text">
+                <b>اقرأ الخلاصة النهائية</b>
+                في آخر شاشة ستجد القرارات الثلاثة جنباً إلى جنب — كل قرار مبني على بيانات المستوى الذي أنتجه، لا على بيانات المستوى الأدنى مباشرةً.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="journey-preview">
+          <div class="journey-chip">
+            <div class="journey-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+            <div><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">تبدأ من هنا</div><b>الفصل الدراسي</b></div>
+          </div>
+          <span class="journey-sep">←</span>
+          <div class="journey-chip">
+            <div class="journey-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/></svg></div>
+            <div><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">المستوى الأول</div><b>قرار المعلّم</b></div>
+          </div>
+          <span class="journey-sep">←</span>
+          <div class="journey-chip">
+            <div class="journey-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/></svg></div>
+            <div><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">المستوى الثاني</div><b>قرار المدير</b></div>
+          </div>
+          <span class="journey-sep">←</span>
+          <div class="journey-chip">
+            <div class="journey-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5M5 9.5V21h14V9.5"/></svg></div>
+            <div><div style="font-size:10px;color:var(--ink-soft);margin-bottom:2px;">المستوى الثالث</div><b>قرار الوزارة</b></div>
+          </div>
+        </div>
+
+        <div class="start-btn-wrap">
+          <button class="primary-btn" id="startBtn">
+            ابدأ المحاكاة
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <p class="start-note">لا يلزم أي تسجيل — بيانات تجريبية افتراضية، تعمل بدون اتصال بالإنترنت</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SCREEN 1: CLASSROOM ============ -->
+    <div class="screen" id="screen-class">
+      <div class="screen-head">
+        <span class="screen-eyebrow">الخطوة 1 — طبقة الصف</span>
+        <h1>غيّر مستوى أي طالب، وراقب الرقم يتحرّك</h1>
+        <p>انقر على أي طالب لتغيير مستوى إتقانه (منخفض ↔ متوسط ↔ مرتفع). كل نقرة تُعيد حساب متوسط الفصل فوراً.</p>
+      </div>
+
+      <div class="card">
+        <div class="instruction-banner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>انقر على بطاقة الطالب لتدوير مستواه عبر ثلاث حالات: مرتفعة الفجوة → متوسطة → متمكّن → مرتفعة من جديد.</span>
+        </div>
+
+        <div class="class-meta-row">
+          <b id="classNameLabel">الصف الرابع / أ</b>
+          <span id="classTeacherLabel">أ. منى الكواري &middot; اللغة العربية &middot; 28 طالباً</span>
+        </div>
+
+        <div class="student-grid" id="studentGrid"></div>
+
+        <div class="legend-row">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span> فجوة مرتفعة (أقل من 50)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--teal-light)"></span> فجوة متوسطة (50–74)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span> متمكّن (75 فأعلى)</div>
+        </div>
+
+        <div class="live-stat-bar">
+          <div class="live-stat">
+            <div class="num" id="statAvg">—</div>
+            <div class="lbl">متوسط إتقان الفصل</div>
+          </div>
+          <div class="live-stat-div"></div>
+          <div class="live-stat">
+            <div class="num" id="statHighCount">—</div>
+            <div class="lbl">طلاب بفجوة مرتفعة</div>
+          </div>
+          <div class="live-stat-div"></div>
+          <div class="gauge-wrap">
+            <div class="gauge-label-row">
+              <span>نسبة الطلاب ذوي الفجوة المرتفعة</span>
+              <span id="gaugeClassPct">0%</span>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-threshold-mark" style="right:0%"></div>
+              <div class="gauge-fill" id="gaugeClassFill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="primary-btn ghost" id="backToWelcome">رجوع</button>
+        <button class="primary-btn" id="toTeacherDecision">عرض قرار المعلّم
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============ SCREEN 2: TEACHER DECISION ============ -->
+    <div class="screen" id="screen-teacher">
+      <div class="screen-head">
+        <span class="screen-eyebrow">الخطوة 2 — قرار المعلّم</span>
+        <h1>هل تفعّلت قاعدة الإنذار المبكر؟</h1>
+        <p>القاعدة بسيطة وصريحة: أي طالب تنخفض درجته عن 50 يدخل تلقائياً في قائمة المعلّم للتدخّل هذا الأسبوع.</p>
+      </div>
+
+      <div class="decision-engine" id="teacherEngine">
+        <div class="decision-head">
+          <div class="decision-icon" id="teacherIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/></svg>
+          </div>
+          <div>
+            <div class="decision-title" id="teacherTitle">—</div>
+            <div class="decision-sub">أ. منى الكواري &middot; الصف الرابع / أ</div>
+          </div>
+        </div>
+
+        <div class="rule-box" id="teacherRuleBox">—</div>
+
+        <div class="decision-output" id="teacherOutput">—</div>
+      </div>
+
+      <div class="nav-row">
+        <button class="primary-btn ghost" id="backToClass1">عودة لتعديل الفصل</button>
+        <button class="primary-btn" id="toSchool">المتابعة لطبقة المدرسة
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============ SCREEN 3: SCHOOL ============ -->
+    <div class="screen" id="screen-school">
+      <div class="screen-head">
+        <span class="screen-eyebrow">الخطوة 3 — طبقة المدرسة</span>
+        <h1>كيف يرى المدير بيانات الفصل مجمّعة؟</h1>
+        <p>المدير لا يرى اسم سلطان أو مريم — يرى فقط النسب المجمّعة لفصل الرابع/أ ضمن مدرسة الأمل الأساسية.</p>
+      </div>
+
+      <div class="card">
+        <div class="agg-grid">
+          <div class="agg-tile">
+            <div class="num" id="schoolAvg">—</div>
+            <div class="lbl">متوسط إتقان الفصل</div>
+          </div>
+          <div class="agg-tile">
+            <div class="num warn" id="schoolHighPct">—</div>
+            <div class="lbl">% فجوة مرتفعة</div>
+          </div>
+          <div class="agg-tile">
+            <div class="num" id="schoolMidCount">—</div>
+            <div class="lbl">طلاب فجوة متوسطة</div>
+          </div>
+          <div class="agg-tile">
+            <div class="num" id="schoolLowCount">—</div>
+            <div class="lbl">طلاب متمكّنون</div>
+          </div>
+        </div>
+        <div class="mini-class-strip" id="schoolMiniStrip"></div>
+      </div>
+
+      <div class="screen-head" style="margin-top:6px;">
+        <span class="screen-eyebrow">قرار المدير</span>
+      </div>
+
+      <div class="decision-engine" id="principalEngine">
+        <div class="decision-head">
+          <div class="decision-icon" id="principalIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/></svg>
+          </div>
+          <div>
+            <div class="decision-title" id="principalTitle">—</div>
+            <div class="decision-sub">إدارة مدرسة الأمل الأساسية</div>
+          </div>
+        </div>
+
+        <div class="rule-box" id="principalRuleBox">—</div>
+
+        <div class="decision-output" id="principalOutput">—</div>
+      </div>
+
+      <div class="nav-row">
+        <button class="primary-btn ghost" id="backToTeacher">عودة لقرار المعلّم</button>
+        <button class="primary-btn" id="toMinistry">المتابعة لطبقة الوزارة
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============ SCREEN 4: MINISTRY ============ -->
+    <div class="screen" id="screen-ministry">
+      <div class="screen-head">
+        <span class="screen-eyebrow">الخطوة 4 — طبقة الوزارة</span>
+        <h1>أثر فصل واحد على مؤشر وطني</h1>
+        <p>المؤشر الوزاري يعكس مدرسة الأمل الأساسية مباشرة في هذا العرض التوضيحي. لاحظ كيف يبقى الأثر حقيقياً، لكنه أهدأ من صخب الفصل.</p>
+      </div>
+
+      <div class="ministry-card">
+        <div class="agg-grid">
+          <div class="agg-tile">
+            <div class="num" id="ministryAvg">—</div>
+            <div class="lbl">مؤشر الإتقان العام</div>
+          </div>
+          <div class="agg-tile">
+            <div class="num warn" id="ministryGapPct">—</div>
+            <div class="lbl">مؤشر الفجوة الإقليمي</div>
+          </div>
+        </div>
+
+        <div class="index-bars" id="ministryIndexBars"></div>
+      </div>
+
+      <div class="screen-head" style="margin-top:18px;">
+        <span class="screen-eyebrow">قرار السياسة</span>
+      </div>
+
+      <div class="decision-engine" id="ministryEngine">
+        <div class="decision-head">
+          <div class="decision-icon" id="ministryIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5M5 9.5V21h14V9.5"/></svg>
+          </div>
+          <div>
+            <div class="decision-title" id="ministryTitle">—</div>
+            <div class="decision-sub">وزارة التربية والتعليم &middot; منطقة الدوحة الوسطى</div>
+          </div>
+        </div>
+
+        <div class="rule-box" id="ministryRuleBox">—</div>
+
+        <div class="decision-output" id="ministryOutput">—</div>
+      </div>
+
+      <div class="nav-row">
+        <button class="primary-btn ghost" id="backToSchool">عودة لطبقة المدرسة</button>
+        <button class="primary-btn" id="toSummary">عرض الرحلة كاملة
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============ SCREEN 5: SUMMARY ============ -->
+    <div class="screen" id="screen-summary">
+      <div class="screen-head">
+        <span class="screen-eyebrow">الخلاصة</span>
+        <h1>الرحلة كاملة: من نقرة واحدة إلى ثلاث قرارات</h1>
+        <p>هذا ما حدث فعلياً بناءً على التغييرات التي أجريتها. الأعمدة الثلاثة معاً، كل واحد بقراره المبني على بياناته.</p>
+      </div>
+
+      <div class="summary-grid" id="summaryGrid"></div>
+
+      <div class="replay-banner">
+        <p>جرّب الآن تغيير المزيد من الطلاب لترى كيف تنقلب القرارات الثلاثة من «لا حاجة للتدخل» إلى «تدخل عاجل» — أو العكس.</p>
+        <button class="primary-btn ghost" id="restartBtn">إعادة الضبط والبدء من جديد</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    محاكاة تفاعلية ضمن مجموعة نماذج <b>منصّة مسار MASAR</b> — جميع الأسماء والبيانات افتراضية لأغراض العرض فقط.
+  </div>
+
+<script>
+/* ============================================================
+   بيانات تجريبية — معالج محاكاة الهيكل المؤسسي (نسخة معاد تصميمها)
+   منصة مسار MASAR — جميع الأسماء والأرقام افتراضية للعرض فقط
+   ============================================================ */
+
+const MASAR_DATA = {
+
+  classroom: {
+    id: "c1",
+    name: "الصف الرابع / أ",
+    teacher: "أ. منى الكواري",
+    subject: "اللغة العربية",
+    school: "مدرسة الأمل الأساسية",
+    zone: "منطقة الدوحة الوسطى"
+  },
+
+  // 28 طالباً بحالة ابتدائية واقعية (موزّعة كما تظهر فعلياً في فصل متوسط)
+  students: [
+    { id:"s01", name:"سلطان",  score:42 },
+    { id:"s02", name:"مريم",   score:88 },
+    { id:"s03", name:"خالد",   score:61 },
+    { id:"s04", name:"فاطمة",  score:35 },
+    { id:"s05", name:"عبدالله",score:74 },
+    { id:"s06", name:"نورة",   score:92 },
+    { id:"s07", name:"راشد",   score:58 },
+    { id:"s08", name:"هند",    score:67 },
+    { id:"s09", name:"أحمد",   score:48 },
+    { id:"s10", name:"العنود", score:81 },
+    { id:"s11", name:"محمد",   score:55 },
+    { id:"s12", name:"الجازي", score:90 },
+    { id:"s13", name:"سعود",   score:39 },
+    { id:"s14", name:"موزة",   score:71 },
+    { id:"s15", name:"ناصر",   score:63 },
+    { id:"s16", name:"شيخة",   score:84 },
+    { id:"s17", name:"يوسف",   score:52 },
+    { id:"s18", name:"ريم",    score:77 },
+    { id:"s19", name:"حمد",    score:45 },
+    { id:"s20", name:"آمنة",   score:69 },
+    { id:"s21", name:"طلال",   score:86 },
+    { id:"s22", name:"لطيفة",  score:58 },
+    { id:"s23", name:"بدر",    score:73 },
+    { id:"s24", name:"غالية",  score:91 },
+    { id:"s25", name:"فهد",    score:64 },
+    { id:"s26", name:"وضحاء",  score:49 },
+    { id:"s27", name:"ماجد",   score:79 },
+    { id:"s28", name:"أسماء",  score:68 }
+  ],
+
+  // مهارات إقليمية لعرضها في لوحة الوزارة (ثابتة، توضيحية فقط)
+  ministryIndexBars: [
+    { label: "الفهم القرائي", value: 64 },
+    { label: "الطلاقة الحسابية", value: 58 },
+    { label: "حل المسائل", value: 71 },
+    { label: "التعبير الكتابي", value: 52 }
+  ]
+};
+
+/* ============================================================
+   عتبات محرّك القرار — صريحة وقابلة للقراءة (هذا هو قلب الواقعية المؤسسية)
+   ============================================================ */
+const THRESHOLDS = {
+  studentAlertScore: 50,      // أي طالب تحت هذا الرقم يدخل قائمة إنذار المعلّم
+  classGapPctForPrincipal: 25,// إن تجاوزت نسبة الطلاب المنذرين هذا الحد، يتدخّل المدير
+  regionalGapPctForMinistry: 35 // إن تجاوز مؤشر الفجوة الإقليمي هذا الحد، تتفعّل سياسة وزارية
+};
+
+function levelOf(score){
+  if(score < 50) return 'high';   // فجوة مرتفعة
+  if(score < 75) return 'mid';    // فجوة متوسطة
+  return 'low';                   // متمكّن
+}
+
+
+/* ============================================================
+   منطق التفاعل — معالج محاكاة الهيكل المؤسسي (نسخة معاد تصميمها)
+   منصة مسار MASAR
+   ============================================================ */
+
+(function(){
+  "use strict";
+
+  const $ = (sel, ctx=document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+  // حالة التطبيق: نسخة قابلة للتعديل من بيانات الطلاب
+  let students = MASAR_DATA.students.map(s => ({...s}));
+
+  const SCREENS = ['welcome','class','teacher','school','ministry','summary'];
+  const STEP_LABELS = ['البداية','الصف','قرار المعلّم','المدرسة','الوزارة','الخلاصة'];
+  let currentScreenIndex = 0;
+
+  const AVATAR_COLORS = ['#0E9A8A','#1E5468','#E8A23D','#5FD4C4','#123C52','#94A3AD'];
+  function avatarColor(id){
+    let sum = 0; for(const ch of id) sum += ch.charCodeAt(0);
+    return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+  }
+
+  /* ---------------- Progress rail ---------------- */
+  function renderProgressRail(){
+    const rail = $('#progressRail');
+    rail.innerHTML = '';
+    const track = document.createElement('div');
+    track.className = 'progress-track';
+    STEP_LABELS.forEach((label, i) => {
+      if(i > 0){
+        const line = document.createElement('div');
+        line.className = 'progress-line' + (i <= currentScreenIndex ? ' done' : '');
+        track.appendChild(line);
+      }
+      const node = document.createElement('div');
+      let cls = 'progress-node';
+      if(i < currentScreenIndex) cls += ' done';
+      else if(i === currentScreenIndex) cls += ' active';
+      node.className = cls;
+      node.innerHTML = `
+        <div class="progress-circle">${i < currentScreenIndex ? '✓' : i+1}</div>
+        <div class="progress-label">${label}</div>
+      `;
+      track.appendChild(node);
+    });
+    rail.appendChild(track);
+  }
+
+  /* ---------------- Screen navigation ---------------- */
+  function goToScreen(name){
+    currentScreenIndex = SCREENS.indexOf(name);
+    SCREENS.forEach(s => $('#screen-'+s).classList.remove('show'));
+    $('#screen-'+name).classList.add('show');
+    renderProgressRail();
+    window.scrollTo({top:0, behavior:'smooth'});
+
+    if(name === 'class') renderClassScreen();
+    if(name === 'teacher') renderTeacherDecision();
+    if(name === 'school') renderSchoolScreen();
+    if(name === 'ministry') renderMinistryScreen();
+    if(name === 'summary') renderSummaryScreen();
+  }
+
+  /* ---------------- Computation helpers ---------------- */
+  function computeStats(list){
+    const high = list.filter(s => levelOf(s.score) === 'high');
+    const mid = list.filter(s => levelOf(s.score) === 'mid');
+    const low = list.filter(s => levelOf(s.score) === 'low');
+    const avg = Math.round(list.reduce((a,s)=>a+s.score,0) / list.length);
+    const highPct = Math.round((high.length / list.length) * 100);
+    return { high, mid, low, avg, highPct, total:list.length };
+  }
+
+  /* ---------------- SCREEN: Classroom ---------------- */
+  function renderClassScreen(){
+    const meta = MASAR_DATA.classroom;
+    $('#classNameLabel').textContent = meta.name;
+    $('#classTeacherLabel').textContent = `${meta.teacher} · ${meta.subject} · ${students.length} طالباً`;
+
+    const grid = $('#studentGrid');
+    grid.innerHTML = '';
+    students.forEach(st => {
+      const lvl = levelOf(st.score);
+      const tile = document.createElement('button');
+      tile.className = `student-tile lvl-${lvl}`;
+      tile.dataset.id = st.id;
+      tile.setAttribute('aria-label', `${st.name}، الدرجة ${st.score}، انقر لتغيير المستوى`);
+      tile.innerHTML = `
+        <div class="student-avatar" style="background:${avatarColor(st.id)}">${st.name.charAt(0)}</div>
+        <div class="student-name">${st.name}</div>
+        <div class="student-score">${st.score}</div>
+        <div class="student-hint">${levelLabelShort(lvl)}</div>
+      `;
+      tile.addEventListener('click', () => cycleStudent(st.id, tile));
+      grid.appendChild(tile);
+    });
+
+    updateClassLiveStats();
+  }
+
+  function levelLabelShort(lvl){
+    return lvl === 'high' ? 'إنذار' : lvl === 'mid' ? 'متابعة' : 'متمكّن';
+  }
+
+  function cycleStudent(id, tileEl){
+    const st = students.find(s => s.id === id);
+    const lvl = levelOf(st.score);
+    // دورة: مرتفعة الفجوة (35) → متوسطة (62) → متمكّن (88) → مرتفعة من جديد
+    if(lvl === 'high') st.score = 62;
+    else if(lvl === 'mid') st.score = 88;
+    else st.score = 35;
+
+    const newLvl = levelOf(st.score);
+    tileEl.className = `student-tile lvl-${newLvl} just-changed`;
+    tileEl.innerHTML = `
+      <div class="student-avatar" style="background:${avatarColor(st.id)}">${st.name.charAt(0)}</div>
+      <div class="student-name">${st.name}</div>
+      <div class="student-score">${st.score}</div>
+      <div class="student-hint">${levelLabelShort(newLvl)}</div>
+    `;
+    setTimeout(()=> tileEl.classList.remove('just-changed'), 550);
+
+    updateClassLiveStats();
+  }
+
+  function updateClassLiveStats(){
+    const stats = computeStats(students);
+    $('#statAvg').textContent = stats.avg;
+    $('#statHighCount').textContent = stats.high.length;
+    $('#statHighCount').parentElement.querySelector('.num').classList.toggle('alert', stats.high.length > 0);
+
+    $('#gaugeClassPct').textContent = stats.highPct + '%';
+    const fill = $('#gaugeClassFill');
+    fill.style.width = stats.highPct + '%';
+    fill.classList.toggle('over-threshold', stats.highPct >= THRESHOLDS.classGapPctForPrincipal);
+
+    const mark = $('.gauge-threshold-mark');
+    mark.style.right = THRESHOLDS.classGapPctForPrincipal + '%';
+  }
+
+  /* ---------------- SCREEN: Teacher decision ---------------- */
+  function renderTeacherDecision(){
+    const stats = computeStats(students);
+    const engine = $('#teacherEngine');
+    const icon = $('#teacherIcon');
+    const title = $('#teacherTitle');
+    const ruleBox = $('#teacherRuleBox');
+    const output = $('#teacherOutput');
+
+    ruleBox.innerHTML = `
+      <span>القاعدة:</span> إذا (درجة الطالب &lt; ${THRESHOLDS.studentAlertScore}) → إضافته لقائمة إنذار المعلّم<br>
+      <span>عدد الطلاب الذين تنطبق عليهم القاعدة الآن:</span>
+      <span class="${stats.high.length > 0 ? 'cond-true' : 'cond-false'}">${stats.high.length} من ${stats.total}</span>
+    `;
+
+    if(stats.high.length === 0){
+      engine.className = 'decision-engine state-ok';
+      icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12a9 9 0 1 1-5.2-8.2"/></svg>';
+      title.textContent = 'القاعدة غير مفعّلة — لا حاجة لتدخّل فردي الآن';
+      output.className = 'decision-output ok';
+      output.innerHTML = `
+        <p>لا يوجد أي طالب تحت حد الإنذار (${THRESHOLDS.studentAlertScore}). تستمر أ. منى بالخطة الدراسية المعتادة دون تدخّل إضافي هذا الأسبوع.</p>
+      `;
+    } else {
+      engine.className = 'decision-engine state-active';
+      icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
+      title.textContent = `القاعدة مفعّلة — ${stats.high.length} ${stats.high.length===1?'طالب يحتاج':'طلاب يحتاجون'} تدخّلاً هذا الأسبوع`;
+      output.className = 'decision-output';
+      output.innerHTML = `
+        <p><b>الإجراء التلقائي المقترح:</b> إضافة الطلاب التالية أسماؤهم لخطة الدعم الأسبوعية لمادة ${MASAR_DATA.classroom.subject}:</p>
+        <div class="affected-names">${stats.high.map(s=>`<span class="affected-chip">${s.name} — ${s.score}</span>`).join('')}</div>
+        <div class="action-list">
+          <div class="action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            جلسة دعم إضافية 20 دقيقة لكل طالب خلال الأسبوع
+          </div>
+          <div class="action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/></svg>
+            تحديث ملف كل طالب في سجل المعلّم بنقطة المتابعة الحالية
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  /* ---------------- SCREEN: School ---------------- */
+  function renderSchoolScreen(){
+    const stats = computeStats(students);
+    $('#schoolAvg').textContent = stats.avg;
+    $('#schoolHighPct').textContent = stats.highPct + '%';
+    $('#schoolMidCount').textContent = stats.mid.length;
+    $('#schoolLowCount').textContent = stats.low.length;
+
+    const strip = $('#schoolMiniStrip');
+    strip.innerHTML = students.map(s => {
+      const lvl = levelOf(s.score);
+      const color = lvl==='high' ? 'var(--amber)' : lvl==='mid' ? 'var(--teal-light)' : 'var(--teal)';
+      return `<div class="mini-dot" style="background:${color}" title="${s.name}: ${s.score}"></div>`;
+    }).join('');
+
+    // Principal decision
+    const engine = $('#principalEngine');
+    const icon = $('#principalIcon');
+    const title = $('#principalTitle');
+    const ruleBox = $('#principalRuleBox');
+    const output = $('#principalOutput');
+
+    const triggered = stats.highPct >= THRESHOLDS.classGapPctForPrincipal;
+
+    ruleBox.innerHTML = `
+      <span>القاعدة:</span> إذا (نسبة الفجوة المرتفعة في الفصل ≥ ${THRESHOLDS.classGapPctForPrincipal}%) → تدخّل إداري على مستوى الفصل<br>
+      <span>النسبة الحالية:</span>
+      <span class="${triggered ? 'cond-true' : 'cond-false'}">${stats.highPct}%</span>
+      <span> ${triggered ? '≥' : '<'} ${THRESHOLDS.classGapPctForPrincipal}%</span>
+    `;
+
+    if(!triggered){
+      engine.className = 'decision-engine state-ok';
+      icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12a9 9 0 1 1-5.2-8.2"/></svg>';
+      title.textContent = 'القاعدة غير مفعّلة — لا قرار إداري إضافي';
+      output.className = 'decision-output ok';
+      output.innerHTML = `<p>نسبة الفجوة في هذا الفصل ضمن الحد الطبيعي. تكتفي الإدارة بمتابعة تقرير المعلّم الأسبوعي دون تخصيص موارد إضافية.</p>`;
+    } else {
+      engine.className = 'decision-engine state-active';
+      icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
+      title.textContent = 'القاعدة مفعّلة — تدخّل إداري على مستوى الفصل';
+      output.className = 'decision-output';
+      output.innerHTML = `
+        <p><b>الإجراء التلقائي المقترح:</b> نسبة الفجوة (${stats.highPct}%) تجاوزت حد التدخل الإداري (${THRESHOLDS.classGapPctForPrincipal}%) في فصل الرابع/أ.</p>
+        <div class="action-list">
+          <div class="action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            تخصيص حصة دعم أسبوعية إضافية لمادة ${MASAR_DATA.classroom.subject} لهذا الفصل
+          </div>
+          <div class="action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            تكليف معلّم مساعد لمتابعة الفصل لمدة أسبوعين
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  /* ---------------- SCREEN: Ministry ---------------- */
+  function renderMinistryScreen(){
+    const stats = computeStats(students);
+    const gapPct = 100 - stats.avg;
+
+    $('#ministryAvg').textContent = stats.avg;
+    $('#ministryGapPct').textContent = gapPct + '%';
+
+    const barsWrap = $('#ministryIndexBars');
+    barsWrap.innerHTML = '';
+    // أول شريط يعكس بيانات الفصل الحيّة (الفهم القرائي)، البقية ثابتة توضيحياً
+    const liveBar = { label: 'الفهم القرائي (هذا الفصل)', value: stats.avg, live:true };
+    const allBars = [liveBar, ...MASAR_DATA.ministryIndexBars.slice(1)];
+
+    allBars.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'index-bar-row';
+      row.innerHTML = `
+        <div class="index-bar-label">${item.label}</div>
+        <div class="index-bar-track"><div class="index-bar-fill ${item.live && gapPct>=THRESHOLDS.regionalGapPctForMinistry ? 'is-target':''}" style="width:0%"></div></div>
+        <div class="index-bar-val">${item.value}%</div>
+      `;
+      barsWrap.appendChild(row);
+      requestAnimationFrame(()=> setTimeout(()=>{ $('.index-bar-fill', row).style.width = item.value+'%'; }, 60));
+    });
+
+    // Ministry policy decision
+    const engine = $('#ministryEngine');
+    const icon = $('#ministryIcon');
+    const title = $('#ministryTitle');
+    const ruleBox = $('#ministryRuleBox');
+    const output = $('#ministryOutput');
+
+    const triggered = gapPct >= THRESHOLDS.regionalGapPctForMinistry;
+
+    ruleBox.innerHTML = `
+      <span>القاعدة:</span> إذا (مؤشر الفجوة الإقليمي ≥ ${THRESHOLDS.regionalGapPctForMinistry}%) → تفعيل سياسة دعم إقليمية<br>
+      <span>المؤشر الحالي:</span>
+      <span class="${triggered ? 'cond-true' : 'cond-false'}">${gapPct}%</span>
+      <span> ${triggered ? '≥' : '<'} ${THRESHOLDS.regionalGapPctForMinistry}%</span>
+    `;
+
+    if(!triggered){
+      engine.className = 'decision-engine state-ok';
+      icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12a9 9 0 1 1-5.2-8.2"/></svg>';
+      title.textContent = 'القاعدة غير مفعّلة — لا سياسة جديدة هذه الدورة';
+      output.className = 'decision-output ok';
+      output.innerHTML = `<p>المؤشر الإقليمي ضمن الحد المقبول. تكتفي الوزارة برصد الاتجاه دون إطلاق ميزانية أو برنامج جديد هذه الدورة.</p>`;
+    } else {
+      engine.className = 'decision-engine state-active';
+      icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
+      title.textContent = 'القاعدة مفعّلة — سياسة دعم إقليمية تتفعّل';
+      output.className = 'decision-output';
+      output.innerHTML = `
+        <p><b>الإجراء التلقائي المقترح:</b> مؤشر الفجوة (${gapPct}%) تجاوز حد السياسة الإقليمية (${THRESHOLDS.regionalGapPctForMinistry}%).</p>
+        <div class="action-list">
+          <div class="action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            رصد ميزانية تدريب إضافية لمعلمي ${MASAR_DATA.classroom.subject} في ${MASAR_DATA.classroom.zone}
+          </div>
+          <div class="action-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+            مراجعة منهج المادة للفصل الدراسي القادم
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  /* ---------------- SCREEN: Summary (3 columns) ---------------- */
+  function renderSummaryScreen(){
+    const stats = computeStats(students);
+    const gapPct = 100 - stats.avg;
+    const teacherTriggered = stats.high.length > 0;
+    const principalTriggered = stats.highPct >= THRESHOLDS.classGapPctForPrincipal;
+    const ministryTriggered = gapPct >= THRESHOLDS.regionalGapPctForMinistry;
+
+    const grid = $('#summaryGrid');
+    grid.innerHTML = `
+      <div class="summary-col col-class">
+        <div class="summary-col-head">
+          <div class="summary-col-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/></svg></div>
+          <b>الفصل والمعلّم</b>
+        </div>
+        <div class="summary-stat">
+          <div class="num">${stats.avg}</div>
+          <div class="lbl">متوسط إتقان الفصل</div>
+        </div>
+        <div class="summary-decision ${teacherTriggered?'is-active':''}">
+          ${teacherTriggered
+            ? `<b>${stats.high.length} ${stats.high.length===1?'طالب':'طلاب'}</b> في قائمة الإنذار: ${stats.high.map(s=>s.name).join('، ')}`
+            : '<b>لا تدخّل فردي</b> — كل الطلاب فوق حد الإنذار'}
+        </div>
+      </div>
+
+      <div class="summary-arrow-row">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      </div>
+
+      <div class="summary-col col-school">
+        <div class="summary-col-head">
+          <div class="summary-col-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/></svg></div>
+          <b>المدرسة والمدير</b>
+        </div>
+        <div class="summary-stat">
+          <div class="num">${stats.highPct}%</div>
+          <div class="lbl">نسبة الفجوة المرتفعة</div>
+        </div>
+        <div class="summary-decision ${principalTriggered?'is-active':''}">
+          ${principalTriggered
+            ? '<b>تدخّل إداري مفعّل</b> — حصة دعم إضافية + معلّم مساعد'
+            : '<b>لا تدخّل إداري</b> — متابعة تقرير المعلّم فقط'}
+        </div>
+      </div>
+
+      <div class="summary-arrow-row">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      </div>
+
+      <div class="summary-col col-ministry">
+        <div class="summary-col-head">
+          <div class="summary-col-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5M5 9.5V21h14V9.5"/></svg></div>
+          <b>الوزارة والسياسة</b>
+        </div>
+        <div class="summary-stat">
+          <div class="num">${gapPct}%</div>
+          <div class="lbl">مؤشر الفجوة الإقليمي</div>
+        </div>
+        <div class="summary-decision ${ministryTriggered?'is-active':''}">
+          ${ministryTriggered
+            ? '<b>سياسة إقليمية تتفعّل</b> — ميزانية تدريب + مراجعة منهج'
+            : '<b>لا سياسة جديدة</b> — رصد الاتجاه فقط'}
+        </div>
+      </div>
+    `;
+  }
+
+  /* ---------------- Reset ---------------- */
+  function resetAll(){
+    students = MASAR_DATA.students.map(s => ({...s}));
+    goToScreen('welcome');
+  }
+
+  /* ---------------- Init ---------------- */
+  function init(){
+    renderProgressRail();
+
+    $('#startBtn').addEventListener('click', () => goToScreen('class'));
+    $('#backToWelcome').addEventListener('click', () => goToScreen('welcome'));
+    $('#toTeacherDecision').addEventListener('click', () => goToScreen('teacher'));
+    $('#backToClass1').addEventListener('click', () => goToScreen('class'));
+    $('#toSchool').addEventListener('click', () => goToScreen('school'));
+    $('#backToTeacher').addEventListener('click', () => goToScreen('teacher'));
+    $('#toMinistry').addEventListener('click', () => goToScreen('ministry'));
+    $('#backToSchool').addEventListener('click', () => goToScreen('school'));
+    $('#toSummary').addEventListener('click', () => goToScreen('summary'));
+    $('#restartBtn').addEventListener('click', resetAll);
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+
+</script>
+</body>
+</html>
