@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASAR | لوحة متابعة الطالب والمدرسة</title>
+<style>
+  :root{
+    --navy:#173F63; --navy-deep:#0C3556; --teal:#1A9E96; --lightblue:#CFEBF9;
+    --bg:#FCFCFD; --text:#17181C; --body:#33414D; --muted:#6B7680;
+    --green:#1B6B4A; --greenbg:#DFF3E8; --amber:#8A6D1B; --amberbg:#FBF0D2; --red:#8A3B3B; --redbg:#F5E7E4;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:'Tahoma',sans-serif;background:var(--bg);color:var(--text);margin:0;}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px 20px 70px;}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .brand{font-weight:bold;color:var(--navy);font-size:15px;}
+  .brand span{color:var(--teal);}
+  .backlink{color:var(--navy);font-size:12.5px;font-weight:bold;text-decoration:none;}
+  h1{color:var(--navy);font-size:22px;margin:8px 0 4px;}
+  p.sub{color:var(--body);font-size:13.5px;margin-bottom:18px;}
+  .tabbar{display:flex;gap:8px;background:#fff;border:1.5px solid #E4E9ED;border-radius:10px;padding:6px;margin-bottom:22px;width:fit-content;}
+  .tabbar button{padding:9px 22px;border-radius:7px;border:none;background:transparent;color:var(--body);font-size:14px;font-weight:bold;cursor:pointer;}
+  .tabbar button.active{background:var(--navy);color:#fff;}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .kpi-card{background:#fff;border:1.5px solid #E4E9ED;border-radius:12px;padding:16px 18px;}
+  .kpi-card .val{font-size:26px;font-weight:bold;color:var(--navy);}
+  .kpi-card .lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .panel{background:#fff;border:1.5px solid #E4E9ED;border-radius:12px;padding:20px 22px;margin-bottom:18px;}
+  .panel h2{color:var(--navy);font-size:16px;margin:0 0 14px;}
+
+  select{padding:9px 12px;border:1.5px solid #D8DEE3;border-radius:8px;font-size:13.5px;font-family:inherit;color:var(--text);margin-bottom:16px;}
+
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .bar-label{width:170px;font-size:13px;color:var(--text);flex-shrink:0;}
+  .bar-track{flex:1;height:14px;background:#EEF1F3;border-radius:7px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:7px;}
+  .bar-pct{width:38px;font-size:12px;color:var(--muted);}
+
+  .goal-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid #F0F2F4;font-size:13.5px;}
+  .goal-item:first-child{border-top:none;}
+  .status{padding:3px 12px;border-radius:12px;font-size:11.5px;font-weight:bold;}
+  .status.done{background:var(--greenbg);color:var(--green);}
+  .status.progress{background:var(--amberbg);color:var(--amber);}
+  .status.notstarted{background:#EEF1F3;color:var(--muted);}
+
+  .timeline-item{display:flex;gap:12px;padding:10px 0;border-top:1px solid #F0F2F4;font-size:13px;}
+  .timeline-item:first-child{border-top:none;}
+  .timeline-date{color:var(--muted);width:80px;flex-shrink:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:right;color:var(--muted);font-size:12px;padding:8px 10px;border-bottom:1.5px solid #E4E9ED;}
+  td{padding:10px;border-bottom:1px solid #F0F2F4;}
+  .flag{background:var(--redbg);color:var(--red);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:bold;}
+  .ok{background:var(--greenbg);color:var(--green);padding:3px 10px;border-radius:10px;font-size:11px;font-weight:bold;}
+
+  .alert-card{background:var(--redbg);border-right:3px solid var(--red);border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#5A2A2A;}
+  .foot-note{color:var(--muted);font-size:12px;margin-top:30px;text-align:center;}
+  .grid2{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:800px){.kpi-row{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">MASAR <span>| مسار</span></div>
+    <a class="backlink" href="index.html">← رحلة الحل المدرسي الكاملة</a>
+  </header>
+  <h1>لوحة متابعة الطالب والمدرسة</h1>
+  <p class="sub">نظام متابعة تفاعلي — بيانات تجريبية بالكامل، لا يتصل بأي قاعدة بيانات حقيقية.</p>
+
+  <div class="tabbar">
+    <button class="active" id="tabStudentBtn" onclick="showTab('student')">لوحة متابعة الطالب</button>
+    <button id="tabSchoolBtn" onclick="showTab('school')">لوحة متابعة المدرسة</button>
+  </div>
+
+  <!-- STUDENT DASHBOARD -->
+  <div id="view-student">
+    <select id="studentSelect" onchange="renderStudent()"></select>
+    <div class="grid2">
+      <div class="panel">
+        <h2>تقدّم المجالات</h2>
+        <div id="studentDomains"></div>
+      </div>
+      <div class="panel">
+        <h2>حالة أهداف الخطة الفردية (IEP)</h2>
+        <div id="studentGoals"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>سجل الملاحظات</h2>
+      <div id="studentTimeline"></div>
+    </div>
+  </div>
+
+  <!-- SCHOOL DASHBOARD -->
+  <div id="view-school" style="display:none;">
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="val" id="kpiTotal"></div><div class="lbl">إجمالي الطلاب المتابَعين</div></div>
+      <div class="kpi-card"><div class="val" id="kpiActive"></div><div class="lbl">نسبة الخطط الفردية النشطة</div></div>
+      <div class="kpi-card"><div class="val" id="kpiProgress"></div><div class="lbl">متوسط التقدم العام</div></div>
+      <div class="kpi-card"><div class="val" id="kpiFlag"></div><div class="lbl">طلاب بحاجة مراجعة عاجلة</div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h2>متوسط التقدم حسب الصف</h2>
+        <div id="classBars"></div>
+      </div>
+      <div class="panel">
+        <h2>تنبيهات تحتاج متابعة</h2>
+        <div id="alertsList"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>تفصيل الطلاب</h2>
+      <table>
+        <thead><tr><th>الطالب</th><th>الصف</th><th>التقدم العام</th><th>آخر تحديث</th><th>الحالة</th></tr></thead>
+        <tbody id="studentsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot-note">MASAR | مسار — لوحة متابعة تجريبية، بيانات محلية بالكامل ولا تتصل بأي خادم.</div>
+</div>
+
+<script>
+const DOMAINS = ["التواصل والتعبير","المهارات الاجتماعية","المهارات الأكاديمية","الاستقلالية الذاتية","التنظيم السلوكي"];
+
+const STUDENTS = [
+  { name:"سارة أحمد", grade:"الصف الرابع", domains:[72,60,55,80,65], lastUpdate:"قبل يومين",
+    goals:[ {t:"التعبير بجمل من كلمتين", s:"done"}, {t:"المشاركة بنشاط جماعي", s:"progress"}, {t:"اتباع روتين الاستقلالية", s:"progress"} ],
+    timeline:[ {d:"28 أغسطس", n:"تحسّن ملحوظ في المبادرة اللفظية داخل الصف."}, {d:"20 أغسطس", n:"احتاجت دعماً إضافياً في نشاط جماعي قصير."}, {d:"10 أغسطس", n:"بداية تطبيق الهدف السلوكي الأول."} ] },
+  { name:"محمد العلي", grade:"الصف السادس", domains:[45,50,68,40,35], lastUpdate:"اليوم",
+    goals:[ {t:"حل مسائل حسابية بمساعدة بسيطة", s:"progress"}, {t:"البقاء بالمقعد 10 دقائق", s:"notstarted"} ],
+    timeline:[ {d:"1 سبتمبر", n:"تراجع طفيف في الانتباه خلال الحصة الأخيرة."}, {d:"25 أغسطس", n:"إنجاز جيد في مهارة حسابية جديدة."} ] },
+  { name:"مريم خالد", grade:"الصف الثاني", domains:[85,78,70,90,88], lastUpdate:"قبل 3 أيام",
+    goals:[ {t:"تحية الزملاء عند الدخول", s:"done"}, {t:"مشاركة الألعاب الجماعية", s:"done"} ],
+    timeline:[ {d:"27 أغسطس", n:"تقدّم ثابت عبر كل المجالات — تُراجَع الأهداف لرفع مستوى التحدي."} ] },
+  { name:"عبدالله ناصر", grade:"الروضة", domains:[30,25,20,40,22], lastUpdate:"قبل أسبوع",
+    goals:[ {t:"استخدام صورة للطلب", s:"progress"}, {t:"الجلوس أثناء النشاط الجماعي", s:"notstarted"} ],
+    timeline:[ {d:"22 أغسطس", n:"لم يُسجَّل تقدم ملحوظ منذ آخر مراجعتين — يحتاج مراجعة الخطة."} ] },
+];
+
+function barColor(pct){ return pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)'; }
+
+function showTab(t){
+  document.getElementById('view-student').style.display = t==='student'?'block':'none';
+  document.getElementById('view-school').style.display = t==='school'?'block':'none';
+  document.getElementById('tabStudentBtn').classList.toggle('active', t==='student');
+  document.getElementById('tabSchoolBtn').classList.toggle('active', t==='school');
+  if(t==='school') renderSchool();
+}
+
+function initStudentSelect(){
+  const sel = document.getElementById('studentSelect');
+  sel.innerHTML = STUDENTS.map((s,i)=>`<option value="${i}">${s.name} — ${s.grade}</option>`).join('');
+  renderStudent();
+}
+function renderStudent(){
+  const i = document.getElementById('studentSelect').value || 0;
+  const s = STUDENTS[i];
+  document.getElementById('studentDomains').innerHTML = DOMAINS.map((d,idx)=>{
+    const pct = s.domains[idx];
+    return `<div class="bar-row"><div class="bar-label">${d}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(pct)};"></div></div><div class="bar-pct">${pct}%</div></div>`;
+  }).join('');
+  const statusMap = {done:['مكتمل','done'], progress:['قيد التنفيذ','progress'], notstarted:['لم يبدأ','notstarted']};
+  document.getElementById('studentGoals').innerHTML = s.goals.map(g=>{
+    const [lbl,cls] = statusMap[g.s];
+    return `<div class="goal-item"><span>${g.t}</span><span class="status ${cls}">${lbl}</span></div>`;
+  }).join('');
+  document.getElementById('studentTimeline').innerHTML = s.timeline.map(t=>`<div class="timeline-item"><div class="timeline-date">${t.d}</div><div>${t.n}</div></div>`).join('');
+}
+
+function renderSchool(){
+  const total = STUDENTS.length;
+  const activeIEP = STUDENTS.filter(s=>s.goals.length>0).length;
+  const avgProgress = Math.round(STUDENTS.reduce((sum,s)=>sum+s.domains.reduce((a,b)=>a+b,0)/s.domains.length,0)/total);
+  const flagged = STUDENTS.filter(s=>s.domains.reduce((a,b)=>a+b,0)/s.domains.length < 40);
+
+  document.getElementById('kpiTotal').textContent = total;
+  document.getElementById('kpiActive').textContent = Math.round((activeIEP/total)*100)+'%';
+  document.getElementById('kpiProgress').textContent = avgProgress+'%';
+  document.getElementById('kpiFlag').textContent = flagged.length;
+
+  const classGroups = {};
+  STUDENTS.forEach(s=>{
+    const avg = s.domains.reduce((a,b)=>a+b,0)/s.domains.length;
+    if(!classGroups[s.grade]) classGroups[s.grade]=[];
+    classGroups[s.grade].push(avg);
+  });
+  document.getElementById('classBars').innerHTML = Object.entries(classGroups).map(([grade,vals])=>{
+    const avg = Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+    return `<div class="bar-row"><div class="bar-label">${grade}</div><div class="bar-track"><div class="bar-fill" style="width:${avg}%;background:${barColor(avg)};"></div></div><div class="bar-pct">${avg}%</div></div>`;
+  }).join('');
+
+  document.getElementById('alertsList').innerHTML = flagged.length
+    ? flagged.map(s=>`<div class="alert-card"><b>${s.name}</b> (${s.grade}) — لم يُسجَّل تقدّم كافٍ في آخر تحديث (${s.lastUpdate}). يُقترَح مراجعة الخطة الفردية.</div>`).join('')
+    : `<div style="color:var(--muted);font-size:13px;">لا توجد تنبيهات عاجلة حالياً.</div>`;
+
+  document.getElementById('studentsTable').innerHTML = STUDENTS.map(s=>{
+    const avg = Math.round(s.domains.reduce((a,b)=>a+b,0)/s.domains.length);
+    const isFlag = avg < 40;
+    return `<tr><td>${s.name}</td><td>${s.grade}</td><td>${avg}%</td><td>${s.lastUpdate}</td><td>${isFlag?'<span class="flag">يحتاج مراجعة</span>':'<span class="ok">ضمن المسار</span>'}</td></tr>`;
+  }).join('');
+}
+
+initStudentSelect();
+</script>
+</body>
+</html>
