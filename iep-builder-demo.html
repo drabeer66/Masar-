@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASAR | أداة إعداد الخطة التربوية الفردية — Demo</title>
+<style>
+  :root{
+    --navy:#173F63; --navy-deep:#0C3556; --teal:#1A9E96; --lightblue:#CFEBF9;
+    --bg:#FCFCFD; --text:#17181C; --body:#33414D; --muted:#6B7680;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:'Tahoma',sans-serif;background:var(--bg);color:var(--text);margin:0;}
+  .wrap{max-width:820px;margin:0 auto;padding:28px 20px 70px;}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .brand{font-weight:bold;color:var(--navy);font-size:15px;}
+  .brand span{color:var(--teal);}
+  h1{color:var(--navy);font-size:23px;margin:6px 0 4px;}
+  p.sub{color:var(--body);font-size:14px;margin-bottom:6px;}
+  .disclaimer{background:#FBF0D2;color:#7A5E14;border-radius:8px;padding:10px 14px;font-size:12.5px;margin-bottom:24px;}
+  .steps-rail{display:flex;flex-direction:row-reverse;gap:6px;margin-bottom:26px;}
+  .step-dot{flex:1;height:6px;border-radius:4px;background:#E4E9ED;}
+  .step-dot.active{background:var(--teal);}
+  .card{background:#fff;border:1.5px solid #E4E9ED;border-radius:12px;padding:24px 26px;margin-bottom:18px;}
+  .card h2{color:var(--navy);font-size:17px;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
+  .step-num{background:var(--teal);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  label{display:block;font-size:13.5px;color:var(--body);margin-bottom:6px;font-weight:bold;}
+  input[type=text], select, textarea{width:100%;padding:10px 12px;border:1.5px solid #D8DEE3;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:16px;color:var(--text);}
+  textarea{resize:vertical;min-height:60px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .chip{padding:8px 16px;border-radius:20px;border:1.5px solid #D8DEE3;background:#fff;font-size:13px;cursor:pointer;color:var(--body);}
+  .chip.selected{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:bold;}
+  .goal-row{border:1.5px solid #E4E9ED;border-radius:10px;padding:14px 16px;margin-bottom:12px;background:#FBFCFD;}
+  .goal-row .domain-tag{display:inline-block;background:var(--lightblue);color:var(--navy-deep);font-size:11.5px;font-weight:bold;padding:3px 10px;border-radius:10px;margin-bottom:8px;}
+  .nav-btns{display:flex;justify-content:space-between;margin-top:6px;}
+  button.primary{background:var(--navy);color:#fff;border:none;padding:11px 26px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;}
+  button.primary:disabled{background:#B7C2CB;cursor:not-allowed;}
+  button.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy);padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;}
+  button.small{background:var(--teal);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12.5px;cursor:pointer;}
+  #screen-plan{display:none;}
+  .plan-doc{background:#fff;border:2px solid var(--navy);border-radius:14px;padding:0;overflow:hidden;}
+  .plan-head{background:var(--navy);color:#fff;padding:22px 26px;}
+  .plan-head h2{margin:0 0 4px;font-size:19px;}
+  .plan-head p{margin:0;color:#CFE3EE;font-size:12.5px;}
+  .plan-body{padding:22px 26px;}
+  .plan-section{margin-bottom:18px;}
+  .plan-section h3{color:var(--teal);font-size:14px;margin:0 0 8px;border-bottom:1px solid #EEF1F3;padding-bottom:6px;}
+  .plan-field{display:flex;font-size:13.5px;margin-bottom:6px;}
+  .plan-field b{width:150px;flex-shrink:0;color:var(--body);}
+  .goal-final{background:#F7FAFB;border-right:3px solid var(--teal);padding:10px 14px;margin-bottom:8px;border-radius:4px;font-size:13.5px;}
+  .foot-note{color:var(--muted);font-size:12px;margin-top:30px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">MASAR <span>| مسار</span></div>
+    <div style="font-size:12px;color:var(--muted);">جزء من رحلة الحل المدرسي الكامل</div>
+  </header>
+  <h1>أداة إعداد الخطة التربوية الفردية — نسخة Demo</h1>
+  <p class="sub">توضح مسار بناء الخطة خطوة بخطوة — دون الاتصال ببنك المهارات الخاص الفعلي.</p>
+  <div class="disclaimer">⚠ نسخة عرض توضيحي: المجالات والأهداف أدناه تمثيلية عامة لأغراض العرض فقط، وليست مسحوبة من البنك الخاص الحقيقي لمسار.</div>
+
+  <div class="steps-rail" id="stepsRail"></div>
+
+  <div id="screen-wizard">
+    <div class="card" id="step1">
+      <h2><span class="step-num">1</span> بيانات الطالب الأساسية</h2>
+      <div class="grid2">
+        <div><label>اسم الطالب (تمثيلي)</label><input type="text" id="studentName" placeholder="مثال: طالب تجريبي"></div>
+        <div><label>الصف الدراسي</label>
+          <select id="grade">
+            <option>الروضة</option><option>الصف الأول</option><option>الصف الثاني</option>
+            <option>الصف الثالث</option><option>الصف الرابع</option><option>الصف الخامس</option>
+          </select>
+        </div>
+      </div>
+      <label>نوع الاحتياج (فئة عامة تمثيلية)</label>
+      <div class="chip-group" id="needTypeChips">
+        <div class="chip" data-v="تواصل">صعوبات تواصل</div>
+        <div class="chip" data-v="سلوك">تنظيم سلوكي</div>
+        <div class="chip" data-v="أكاديمي">تحدٍ أكاديمي</div>
+        <div class="chip" data-v="حركي">تحدٍ حركي</div>
+        <div class="chip" data-v="اجتماعي">مهارات اجتماعية</div>
+      </div>
+      <div class="nav-btns"><span></span><button class="primary" onclick="goStep(2)">التالي →</button></div>
+    </div>
+
+    <div class="card" id="step2" style="display:none;">
+      <h2><span class="step-num">2</span> مجالات الأهداف</h2>
+      <p style="color:var(--muted);font-size:13px;margin-top:-8px;">اختاري مجالاً أو أكثر (قائمة عامة تمثيلية وليست من قاعدة بيانات حقيقية)</p>
+      <div class="chip-group" id="domainChips">
+        <div class="chip" data-v="التواصل والتعبير">التواصل والتعبير</div>
+        <div class="chip" data-v="المهارات الاجتماعية">المهارات الاجتماعية</div>
+        <div class="chip" data-v="المهارات الأكاديمية">المهارات الأكاديمية</div>
+        <div class="chip" data-v="الاستقلالية الذاتية">الاستقلالية الذاتية</div>
+        <div class="chip" data-v="المهارات الحركية">المهارات الحركية</div>
+        <div class="chip" data-v="التنظيم السلوكي">التنظيم السلوكي</div>
+      </div>
+      <div class="nav-btns"><button class="ghost" onclick="goStep(1)">→ السابق</button><button class="primary" id="toStep3" disabled onclick="prepStep3()">التالي →</button></div>
+    </div>
+
+    <div class="card" id="step3" style="display:none;">
+      <h2><span class="step-num">3</span> الأهداف السنوية والسلوكية</h2>
+      <p style="color:var(--muted);font-size:13px;margin-top:-8px;">لكل مجال مُختار: هدف سنوي وهدف سلوكي قصير قابل للتعديل الحر</p>
+      <div id="goalsContainer"></div>
+      <div class="nav-btns"><button class="ghost" onclick="goStep(2)">→ السابق</button><button class="primary" onclick="buildPlan()">إنشاء الخطة →</button></div>
+    </div>
+  </div>
+
+  <div id="screen-plan">
+    <div class="plan-doc">
+      <div class="plan-head">
+        <h2>الخطة التربوية الفردية — نسخة Demo</h2>
+        <p>مبنية على الأصول التمثيلية فقط — غير متصلة بالبنك الخاص الحقيقي</p>
+      </div>
+      <div class="plan-body">
+        <div class="plan-section">
+          <h3>بيانات الطالب</h3>
+          <div class="plan-field"><b>الاسم:</b> <span id="pName"></span></div>
+          <div class="plan-field"><b>الصف:</b> <span id="pGrade"></span></div>
+          <div class="plan-field"><b>نوع الاحتياج:</b> <span id="pNeed"></span></div>
+        </div>
+        <div class="plan-section">
+          <h3>الأهداف</h3>
+          <div id="pGoals"></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns" style="margin-top:20px;">
+      <button class="ghost" onclick="location.reload()">إعادة البناء</button>
+      <span></span>
+    </div>
+  </div>
+
+  <div class="foot-note">MASAR | مسار — نموذج Demo مستقل، لا يتصل بالبنك الخاص أو بأي بيانات طالب حقيقية.</div>
+</div>
+
+<script>
+let state = { need:null, domains:[], goals:{} };
+
+function goStep(n){
+  document.getElementById('step1').style.display = n===1?'block':'none';
+  document.getElementById('step2').style.display = n===2?'block':'none';
+  document.getElementById('step3').style.display = n===3?'block':'none';
+  renderRail(n);
+}
+function renderRail(n){
+  const rail = document.getElementById('stepsRail');
+  rail.innerHTML='';
+  for(let i=1;i<=3;i++){
+    const d = document.createElement('div');
+    d.className = 'step-dot'+(i<=n?' active':'');
+    rail.appendChild(d);
+  }
+}
+renderRail(1);
+
+document.querySelectorAll('#needTypeChips .chip').forEach(chip=>{
+  chip.onclick = ()=>{
+    document.querySelectorAll('#needTypeChips .chip').forEach(c=>c.classList.remove('selected'));
+    chip.classList.add('selected');
+    state.need = chip.dataset.v;
+  };
+});
+document.querySelectorAll('#domainChips .chip').forEach(chip=>{
+  chip.onclick = ()=>{
+    chip.classList.toggle('selected');
+    const v = chip.dataset.v;
+    if(state.domains.includes(v)) state.domains = state.domains.filter(x=>x!==v);
+    else state.domains.push(v);
+    document.getElementById('toStep3').disabled = state.domains.length===0;
+  };
+});
+
+const GOAL_SUGGESTIONS = {
+  "التواصل والتعبير": {annual:"يُعبّر الطالب عن احتياجاته باستخدام جمل من كلمتين فأكثر في المواقف اليومية.", behavioral:"يستخدم الطالب صورة أو إشارة للطلب دون مساعدة في 4 من 5 محاولات."},
+  "المهارات الاجتماعية": {annual:"يشارك الطالب في نشاط جماعي قصير مع قرين واحد على الأقل.", behavioral:"يبادر الطالب بالتحية عند الدخول للصف في 3 من 5 أيام."},
+  "المهارات الأكاديمية": {annual:"يميّز الطالب الحروف الأساسية في اسمه ويكتبها بمساعدة بسيطة.", behavioral:"ينسخ الطالب 3 حروف مطابقة للنموذج دون أخطاء."},
+  "الاستقلالية الذاتية": {annual:"ينجز الطالب روتين غسل اليدين كاملاً دون مساعدة لفظية متكررة.", behavioral:"يتبع الطالب خطوتين متتاليتين من الروتين دون توجيه إضافي."},
+  "المهارات الحركية": {annual:"يستخدم الطالب قبضة قلم مناسبة لتلوين مساحة محددة.", behavioral:"يمسك الطالب القلم بالطريقة الصحيحة لمدة دقيقتين متواصلتين."},
+  "التنظيم السلوكي": {annual:"يبقى الطالب في مقعده خلال نشاط جماعي مدته 10 دقائق.", behavioral:"يستخدم الطالب إشارة اتفقنا عليها للطلب بدلاً من مغادرة المقعد."},
+};
+
+function prepStep3(){
+  goStep(3);
+  const c = document.getElementById('goalsContainer');
+  c.innerHTML = state.domains.map(d=>{
+    const sug = GOAL_SUGGESTIONS[d] || {annual:"",behavioral:""};
+    state.goals[d] = { annual: sug.annual, behavioral: sug.behavioral };
+    return `<div class="goal-row">
+      <span class="domain-tag">${d}</span>
+      <label>الهدف السنوي</label>
+      <textarea onchange="updateGoal('${d}','annual',this.value)">${sug.annual}</textarea>
+      <label>الهدف السلوكي القصير</label>
+      <textarea onchange="updateGoal('${d}','behavioral',this.value)">${sug.behavioral}</textarea>
+    </div>`;
+  }).join('');
+}
+function updateGoal(domain, field, val){ state.goals[domain][field] = val; }
+
+function buildPlan(){
+  document.getElementById('screen-wizard').style.display='none';
+  document.getElementById('screen-plan').style.display='block';
+  document.getElementById('pName').textContent = document.getElementById('studentName').value || 'طالب تجريبي';
+  document.getElementById('pGrade').textContent = document.getElementById('grade').value;
+  document.getElementById('pNeed').textContent = state.need || '—';
+  const gc = document.getElementById('pGoals');
+  gc.innerHTML = state.domains.map(d=>{
+    const g = state.goals[d];
+    return `<div class="goal-final"><b>${d}</b><br>الهدف السنوي: ${g.annual}<br>الهدف السلوكي: ${g.behavioral}</div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
