@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MASAR Multi-Level Activity Generator™</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: #f3f7fc;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .app-container {
+      max-width: 1300px;
+      width: 100%;
+      background: white;
+      border-radius: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0,20,40,0.06);
+      padding: 2rem 1.8rem;
+    }
+    /* header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #e3ecf5;
+      padding-bottom: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .brand h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #0b2a3c;
+      letter-spacing: -0.3px;
+    }
+    .brand h1 i {
+      color: #1f7a9e;
+      margin-left: 10px;
+    }
+    .brand .sub {
+      font-size: 0.9rem;
+      color: #4a6f86;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+    .lang-toggle {
+      background: #eaf1f8;
+      padding: 0.4rem 1.2rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1b4a62;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .lang-toggle:hover {
+      background: #d3e2ed;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 1.8rem;
+      padding: 1.6rem 1.8rem;
+      border: 1px solid #e8f0f7;
+      box-shadow: 0 4px 12px rgba(0,20,30,0.02);
+      margin-bottom: 1.8rem;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: #12374a;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title i {
+      color: #1f7a9e;
+      width: 1.8rem;
+    }
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 700px) {
+      .grid-2col { grid-template-columns: 1fr; }
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 0.8rem;
+    }
+    .field-group label {
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #265267;
+    }
+    .field-group input, .field-group select {
+      padding: 0.7rem 1rem;
+      border-radius: 14px;
+      border: 1px solid #d7e3ed;
+      background: #fafdff;
+      font-size: 0.95rem;
+      transition: 0.15s;
+    }
+    .field-group input:focus, .field-group select:focus {
+      outline: 2px solid #88bedb;
+      border-color: transparent;
+    }
+    .btn {
+      background: #eaf1f8;
+      border: none;
+      padding: 0.6rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #1b4a62;
+      cursor: pointer;
+      transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: #1a5f7a;
+      color: white;
+      box-shadow: 0 4px 10px rgba(26,95,122,0.15);
+    }
+    .btn-primary:hover {
+      background: #0f4a62;
+      transform: scale(0.97);
+    }
+    .btn-success {
+      background: #1f8b6b;
+      color: white;
+    }
+    .btn-success:hover {
+      background: #167a5b;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #c2d4e3;
+    }
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .badge {
+      background: #e4eef7;
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      color: #1b4a62;
+    }
+    .activity-block {
+      background: #f8fcff;
+      border-radius: 1.4rem;
+      padding: 1.2rem 1.5rem;
+      border: 1px solid #deeaf4;
+      margin-bottom: 1.2rem;
+    }
+    .activity-block h3 {
+      color: #0f3d54;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+    .activity-block .level-tag {
+      display: inline-block;
+      background: #1f7a9e20;
+      padding: 0.15rem 1rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #1a5f7a;
+      margin-bottom: 8px;
+    }
+    .activity-block .meta {
+      color: #3d687f;
+      font-size: 0.8rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 6px 0 10px;
+    }
+    .activity-block .meta i {
+      margin-left: 4px;
+    }
+    .activity-block .instruction {
+      background: white;
+      padding: 0.8rem 1rem;
+      border-radius: 14px;
+      border-right: 4px solid #1f7a9e;
+      margin: 6px 0;
+    }
+    .activity-block .evidence {
+      background: #e5f0f7;
+      padding: 0.4rem 1rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
+    .edit-area {
+      margin-top: 8px;
+    }
+    .edit-area textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid #d7e3ed;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+      background: #fafdff;
+    }
+    .footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .print-hide {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sample-note {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #5a7d94;
+      border-top: 1px solid #e0eaf3;
+      padding-top: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .app-container { box-shadow: none; border: 1px solid #ccc; }
+      .activity-block { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container" id="app">
+
+  <!-- header -->
+  <div class="header no-print">
+    <div class="brand">
+      <h1><i class="fas fa-layer-group"></i> MASAR Multi-Level Activity Generator™</h1>
+      <div class="sub"><i class="fas fa-chalkboard-teacher"></i> مولّد الأنشطة متعددة المستويات للمعلم</div>
+    </div>
+    <div class="lang-toggle" @click="toggleLang">🇸🇦 EN</div>
+  </div>
+
+  <!-- Inputs -->
+  <div class="card no-print">
+    <div class="card-title"><i class="fas fa-sliders-h"></i> إعدادات النشاط</div>
+    <div class="grid-2col">
+      <div class="field-group">
+        <label>الصف / المستوى</label>
+        <select v-model="inputs.grade">
+          <option v-for="g in ['الصف الأول','الصف الثاني','الصف الثالث','الصف الرابع','الصف الخامس','الصف السادس']" :key="g">{{g}}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>العمر</label>
+        <input v-model="inputs.age" placeholder="مثال: 8" type="number" />
+      </div>
+      <div class="field-group">
+        <label>المادة</label>
+        <select v-model="inputs.subject">
+          <option v-for="s in ['اللغة العربية','الرياضيات','العلوم','الدراسات الإسلامية']" :key="s">{{s}}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>المجال</label>
+        <select v-model="inputs.domain">
+          <option v-for="d in ['قراءة','كتابة','فهم','حساب','منطق']" :key="d">{{d}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2col">
+      <div class="field-group">
+        <label>المهارة المستهدفة</label>
+        <select v-model="inputs.skill">
+          <option v-for="sk in skillOptions" :key="sk">{{sk}}</option>
+        </select>
+        <span style="font-size:0.7rem; color:#3d687f;"><i class="fas fa-database"></i> عينة مهارات (Sample Skills)</span>
+      </div>
+      <div class="field-group">
+        <label>المستوى الحالي للأداء</label>
+        <select v-model="inputs.performance">
+          <option v-for="p in ['Beginning','Emerging','Developing','Proficient','Advanced']" :key="p">{{p}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2col">
+      <div class="field-group">
+        <label>نوع النشاط</label>
+        <select v-model="inputs.activityType">
+          <option v-for="t in ['Practice','Matching','Sorting','Sequencing','Reading','Writing','Problem Solving','Review','Assessment']" :key="t">{{t}}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>دعم المتعلم (اختياري)</label>
+        <select v-model="inputs.support">
+          <option value="">بدون دعم إضافي</option>
+          <option v-for="s in ['Visual Support','Reduced Choices','Extra Time','Simplified Instructions','Modeling','Verbal Prompt','Repetition','Alternative Response']" :key="s">{{s}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex-row mt-2">
+      <button class="btn btn-success" @click="generateActivities"><i class="fas fa-magic"></i> Generate 3 Levels</button>
+      <span class="badge"><i class="fas fa-arrow-right"></i> Supported → Guided → Independent</span>
+    </div>
+  </div>
+
+  <!-- Activities Output -->
+  <div v-if="activities.length">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> الأنشطة المتولدة</div>
+      <div v-for="(act, idx) in activities" :key="idx" class="activity-block">
+        <div class="level-tag">{{ act.level }}</div>
+        <h3>{{ act.title }}</h3>
+        <div class="meta">
+          <span><i class="fas fa-bullseye"></i> المهارة: {{ act.skill }}</span>
+          <span><i class="fas fa-flag"></i> المستوى: {{ act.difficulty }}</span>
+          <span><i class="fas fa-tag"></i> {{ act.type }}</span>
+        </div>
+        <div><strong>هدف التعلم:</strong> {{ act.objective }}</div>
+        <div class="instruction"><i class="fas fa-list-ul"></i> <strong>التعليمات:</strong> {{ act.instructions }}</div>
+        <div><strong>المواد:</strong> {{ act.materials }}</div>
+        <div style="margin:6px 0;"><strong>خطوات النشاط:</strong> {{ act.steps }}</div>
+        <div><strong>الاستجابة المتوقعة:</strong> {{ act.expectedResponse }}</div>
+        <div><strong>توجيه المعلم:</strong> {{ act.teacherPrompt }}</div>
+        <div><strong>الدعم / السقالات:</strong> {{ act.scaffolding }}</div>
+        <div class="evidence"><i class="fas fa-check-circle"></i> دليل التعلم: {{ act.evidence }}</div>
+        <div v-if="act.extension" style="margin-top:6px; background:#e9f2f9; padding:0.3rem 1rem; border-radius:30px; display:inline-block; font-size:0.85rem;"><i class="fas fa-star"></i> إضافة: {{ act.extension }}</div>
+        <!-- edit -->
+        <div class="edit-area">
+          <textarea v-model="act.editedInstructions" placeholder="تعديل التعليمات..." rows="2"></textarea>
+        </div>
+      </div>
+      <!-- footer actions -->
+      <div class="footer-actions no-print">
+        <div class="print-hide">
+          <button class="btn btn-outline" @click="window.print()"><i class="fas fa-print"></i> طباعة</button>
+          <button class="btn btn-outline" @click="savePDF"><i class="fas fa-file-pdf"></i> حفظ PDF</button>
+          <button class="btn btn-outline" @click="duplicateActivities"><i class="fas fa-copy"></i> تكرار</button>
+          <button class="btn btn-outline" @click="regenerateActivities"><i class="fas fa-sync"></i> إعادة توليد</button>
+        </div>
+        <button class="btn btn-outline" @click="resetAll"><i class="fas fa-undo"></i> بدء جديد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- sample note & integration hint -->
+  <div class="sample-note no-print">
+    <i class="fas fa-plug"></i> قابل للتكامل مع MASAR Skill Gap Diagnostic™ — بنية البيانات جاهزة لاستقبال مخرجات التشخيص.
+    <br><span style="font-size:0.7rem;">عينة مهارات — غير مرتبطة بقاعدة بيانات MASAR الحقيقية.</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script>
+  (function(){
+    // sample skill bank
+    const sampleSkills = [
+      'تمييز الأشكال الهندسية الأساسية',
+      'قراءة كلمات ثلاثية',
+      'جمع الأعداد حتى 20',
+      'كتابة جملة بسيطة',
+      'فهم المقروء (فقرة قصيرة)',
+      'الضرب في 2',
+      'ترتيب الكلمات لتكوين جملة',
+      'تصنيف الكائنات حسب الخواص'
+    ];
+
+    // activity generator logic
+    function generateActivitySet(skill, grade, performance, type, support, domain) {
+      // build structured activities for 3 levels
+      const base = {
+        skill: skill,
+        grade: grade,
+        domain: domain || 'عام',
+        type: type || 'Practice',
+      };
+
+      // helper to create level
+      function createLevel(level, difficulty, desc, instructions, steps, evidence, extension='') {
+        return {
+          level: level,
+          difficulty: difficulty,
+          title: `${skill} — ${level}`,
+          objective: `إتقان مهارة "${skill}" في المستوى ${difficulty}`,
+          instructions: instructions,
+          materials: 'أدوات الكتابة / بطاقات / أوراق عمل (حسب النشاط)',
+          steps: steps,
+          expectedResponse: 'استجابة صحيحة وفق معايير المهارة',
+          teacherPrompt: `شجع الطالب وراقب أداءه في ${level}`,
+          scaffolding: (support ? support + '، ' : '') + 'توجيه حسب الحاجة',
+          evidence: evidence,
+          extension: extension,
+          editedInstructions: instructions, // for edit
+          ...base
+        };
+      }
+
+      // level 1: Supported
+      const l1 = createLevel(
+        'المستوى الأول — دعم',
+        'دعم (Supported)',
+        'نشاط مع نمذجة وتلميحات',
+        `اختر الإجابة الصحيحة من بين 3 خيارات. (مع مثال توضيحي) — المهارة: ${skill}`,
+        '1. اعرض مثالاً. 2. اطلب من الطالب اختيار الإجابة. 3. قدم تلميحات إذا لزم.',
+        'يستطيع الطالب اختيار الإجابة الصحيحة بدعم',
+        'نشاط إضافي: رسم أو تلوين لتثبيت المهارة'
+      );
+
+      // level 2: Guided
+      const l2 = createLevel(
+        'المستوى الثاني — موجه',
+        'موجه (Guided)',
+        'نشاط بدعم أقل وتعليمات واضحة',
+        `صنف أو رتب العناصر حسب المهارة: ${skill} (عدد 4-5 عناصر)`,
+        '1. قدم تعليمات واضحة. 2. اطلب التصنيف. 3. ناقش الإجابات.',
+        'يصنف الطالب العناصر بشكل صحيح مع توجيه بسيط',
+        'نشاط إضافي: حل مسائل مشابهة'
+      );
+
+      // level 3: Independent
+      const l3 = createLevel(
+        'المستوى الثالث — مستقل',
+        'مستقل (Independent)',
+        'نشاط يتطلب أداءً مستقلاً',
+        `طبّق المهارة ${skill} في مواقف جديدة (3-4 مواقف) دون مساعدة`,
+        '1. اقرأ الموقف. 2. طبق المهارة. 3. قدم إجاباتك.',
+        'يستطيع الطالب تطبيق المهارة في سياقات جديدة بشكل مستقل',
+        'تحدي: إنشاء مثال خاص به'
+      );
+
+      // level 4 extension (optional)
+      const l4 = createLevel(
+        'المستوى الرابع — توسعة',
+        'توسعة (Extension)',
+        'نشاط للطلاب المتقدمين',
+        `استخدم المهارة ${skill} لبناء نمط أو تصميم جديد أو حل مشكلة مفتوحة`,
+        '1. فكر في تصميم. 2. طبّق المهارة. 3. اشرح عملك.',
+        'يبتكر الطالب تطبيقاً جديداً للمهارة',
+        'توسعة: مشاركة العمل مع زملائه'
+      );
+
+      return [l1, l2, l3, l4];
+    }
+
+    new Vue({
+      el: '#app',
+      data: {
+        inputs: {
+          grade: 'الصف الثاني',
+          age: 8,
+          subject: 'الرياضيات',
+          domain: 'حساب',
+          skill: 'تمييز الأشكال الهندسية الأساسية',
+          performance: 'Developing',
+          activityType: 'Practice',
+          support: ''
+        },
+        skillOptions: sampleSkills,
+        activities: [],
+      },
+      methods: {
+        toggleLang() {
+          document.dir = (document.dir === 'rtl') ? 'ltr' : 'rtl';
+        },
+        generateActivities() {
+          const { grade, age, subject, domain, skill, performance, activityType, support } = this.inputs;
+          const sets = generateActivitySet(skill, grade, performance, activityType, support, domain);
+          this.activities = sets;
+        },
+        regenerateActivities() {
+          this.generateActivities();
+        },
+        duplicateActivities() {
+          if (!this.activities.length) return;
+          const copies = this.activities.map(a => ({ ...a, title: a.title + ' (نسخة)' }));
+          this.activities = this.activities.concat(copies);
+        },
+        savePDF() {
+          alert('استخدم "طباعة" ثم اختر "حفظ كـ PDF" من قائمة الطباعة.');
+        },
+        resetAll() {
+          this.activities = [];
+          this.inputs = {
+            grade: 'الصف الثاني',
+            age: 8,
+            subject: 'الرياضيات',
+            domain: 'حساب',
+            skill: 'تمييز الأشكال الهندسية الأساسية',
+            performance: 'Developing',
+            activityType: 'Practice',
+            support: ''
+          };
+        }
+      },
+      mounted() {
+        // preload with a sample activity
+        this.generateActivities();
+      }
+    });
+  })();
+</script>
+</body>
+</html>
