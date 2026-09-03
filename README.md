@@ -28,6 +28,8 @@
 | المخطط التعليمي القائم على الأدلة | [افتح](01_MASAR_TOOLS_PRODUCTS/Educational_Content/evidence-model.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 | أداة إعداد الخطة التربوية الفردية | [افتح](01_MASAR_TOOLS_PRODUCTS/IEP_Planning/iep-builder-demo.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 | لوحة متابعة الطالب والمدرسة | [افتح](01_MASAR_TOOLS_PRODUCTS/Monitoring_Tools/monitoring-dashboard.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
+| أداة تشخيص فجوات مهارات الطالب | [افتح](01_MASAR_TOOLS_PRODUCTS/Skill_Gap_Diagnostic/skill-gap-diagnostic.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
+| مولّد الأنشطة متعددة المستويات | [افتح](01_MASAR_TOOLS_PRODUCTS/Activity_Generator/activity-generator.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 | مغامرات مستكشف الفضاء | [افتح](01_MASAR_TOOLS_PRODUCTS/Interactive_Kids_Content/أنشطة_الأطفال_التفاعلية/space-adventures.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 | قصص تفاعلية — قصة ميمي | [افتح المجلد](01_MASAR_TOOLS_PRODUCTS/Interactive_Kids_Content/قصص_تفاعلية/) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 
@@ -75,6 +77,8 @@ MASAR/
 │   ├── Educational_Content/
 │   ├── IEP_Planning/
 │   ├── Monitoring_Tools/
+│   ├── Skill_Gap_Diagnostic/
+│   ├── Activity_Generator/
 │   └── Interactive_Kids_Content/
 │
 └── 02_MASAR_SCHOOL_SOLUTIONS/
