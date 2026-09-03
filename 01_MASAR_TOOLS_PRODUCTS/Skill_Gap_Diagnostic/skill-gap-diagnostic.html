@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+  <title>MASAR Skill Gap Diagnostic™ | أداة تشخيص فجوات مهارات الطالب</title>
+  <!-- Font & Icons (Font Awesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background: #f5f9fc;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .app-container {
+      max-width: 1280px;
+      width: 100%;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 20px 40px rgba(0,20,40,0.08);
+      padding: 2rem 1.5rem;
+      transition: all 0.2s;
+    }
+    /* header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #e6edf4;
+      padding-bottom: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .brand h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0b2a3c;
+      letter-spacing: -0.3px;
+    }
+    .brand h1 i {
+      color: #2a7faa;
+      margin-left: 8px;
+    }
+    .brand .sub {
+      font-size: 0.9rem;
+      color: #476b82;
+      margin-top: 4px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .lang-toggle {
+      background: #e9f0f6;
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1b4a62;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: 0.15s;
+    }
+    .lang-toggle:hover {
+      background: #d3e2ed;
+    }
+    /* cards */
+    .card {
+      background: #ffffff;
+      border-radius: 1.5rem;
+      padding: 1.5rem 1.8rem;
+      box-shadow: 0 6px 18px rgba(0, 20, 30, 0.04);
+      border: 1px solid #eef4f9;
+      margin-bottom: 2rem;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: #12374a;
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title i {
+      color: #2a7faa;
+      width: 1.6rem;
+    }
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 700px) {
+      .grid-2col { grid-template-columns: 1fr; }
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+    .field-group label {
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #2a4b5e;
+      letter-spacing: 0.3px;
+    }
+    .field-group select, .field-group input {
+      padding: 0.7rem 1rem;
+      border-radius: 14px;
+      border: 1px solid #dbe4ec;
+      background: #fafdff;
+      font-size: 0.95rem;
+      transition: 0.15s;
+    }
+    .field-group select:focus, .field-group input:focus {
+      outline: 2px solid #7fb6d4;
+      border-color: transparent;
+    }
+    .btn {
+      background: #eef4f9;
+      border: none;
+      padding: 0.6rem 1.6rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #1b4a62;
+      cursor: pointer;
+      transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: #1a5f7a;
+      color: white;
+      box-shadow: 0 4px 8px rgba(26, 95, 122, 0.15);
+    }
+    .btn-primary:hover {
+      background: #0f4a62;
+      transform: scale(0.98);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #cbdae6;
+    }
+    .btn-success {
+      background: #1f8b6b;
+      color: white;
+    }
+    .btn-success:hover {
+      background: #167a5b;
+    }
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .badge {
+      background: #e2eaf1;
+      padding: 0.2rem 0.9rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #1f4b61;
+    }
+    /* skill list */
+    .skill-item {
+      background: #f8fbfe;
+      border-radius: 16px;
+      padding: 0.9rem 1.2rem;
+      border: 1px solid #e6eef6;
+      margin-bottom: 0.7rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .skill-name {
+      font-weight: 500;
+      color: #0b2a3c;
+      flex: 2 1 180px;
+    }
+    .skill-meta {
+      color: #486f86;
+      font-size: 0.8rem;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .skill-level {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .skill-level select {
+      padding: 0.3rem 0.8rem;
+      border-radius: 30px;
+      border: 1px solid #cfdde9;
+      background: white;
+      font-size: 0.8rem;
+    }
+    .skill-note input {
+      padding: 0.3rem 0.8rem;
+      border-radius: 30px;
+      border: 1px solid #cfdde9;
+      font-size: 0.8rem;
+      width: 120px;
+    }
+    .gap-badge {
+      background: #e6f0f7;
+      border-radius: 30px;
+      padding: 0.2rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .priority-high { color: #b13e3e; background: #fee9e9; }
+    .priority-med { color: #b17a2c; background: #fff0d6; }
+    .priority-low { color: #2f7854; background: #dff0e6; }
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    @media (max-width: 700px) {
+      .report-grid { grid-template-columns: 1fr; }
+    }
+    .stat-box {
+      background: #f6faff;
+      border-radius: 1.2rem;
+      padding: 1rem 1.2rem;
+      border: 1px solid #e2ecf5;
+    }
+    .stat-box h4 {
+      font-size: 0.85rem;
+      color: #2a5770;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #0b2a3c;
+    }
+    .inline-flex {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .mt-2 { margin-top: 1.2rem; }
+    .mb-1 { margin-bottom: 0.5rem; }
+    .text-muted { color: #4c6f84; }
+    hr { border: none; border-top: 1px solid #dfeaf3; margin: 1.2rem 0; }
+    .footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .print-hide {
+      display: flex;
+      gap: 8px;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .app-container { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container" id="app">
+
+  <!-- header -->
+  <div class="header no-print">
+    <div class="brand">
+      <h1><i class="fas fa-route"></i> MASAR Skill Gap Diagnostic™</h1>
+      <div class="sub"><i class="fas fa-graduation-cap"></i> أداة تشخيص فجوات مهارات الطالب</div>
+    </div>
+    <div class="lang-toggle" @click="toggleLang">🇸🇦 EN</div>
+  </div>
+
+  <!-- STEP 1 : Student -->
+  <div class="card no-print" id="step-student">
+    <div class="card-title"><i class="fas fa-user-graduate"></i> 1. بيانات الطالب</div>
+    <div class="grid-2col">
+      <div class="field-group">
+        <label>اسم الطالب / ID</label>
+        <input v-model="student.name" placeholder="مثال: أحمد السيد" />
+      </div>
+      <div class="field-group">
+        <label>الصف / المستوى</label>
+        <select v-model="student.grade">
+          <option v-for="g in ['الصف الأول','الصف الثاني','الصف الثالث','الصف الرابع','الصف الخامس','الصف السادس']" :key="g">{{g}}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>العمر</label>
+        <input v-model="student.age" placeholder="مثال: 9" type="number" />
+      </div>
+      <div class="field-group">
+        <label>المادة</label>
+        <select v-model="student.subject">
+          <option v-for="s in ['اللغة العربية','الرياضيات','العلوم','الدراسات الإسلامية']" :key="s">{{s}}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>المجال</label>
+        <select v-model="student.domain">
+          <option v-for="d in ['قراءة','كتابة','فهم','حساب','منطق']" :key="d">{{d}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex-row">
+      <button class="btn btn-primary" @click="loadSkills"> <i class="fas fa-list-ul"></i> تحميل المهارات المناسبة</button>
+      <span class="badge"><i class="far fa-clock"></i> عينة تجريبية (Sample Skills)</span>
+    </div>
+  </div>
+
+  <!-- STEP 2+3 : Select & Assess -->
+  <div class="card no-print" v-if="skills.length">
+    <div class="card-title"><i class="fas fa-check-double"></i> 2. قائمة المهارات (تقييم الأداء)</div>
+    <div v-for="(sk, idx) in skills" :key="idx" class="skill-item">
+      <div class="skill-name">
+        {{ sk.name }} 
+        <span class="skill-meta"><i class="far fa-code"></i> {{ sk.code }} | متوقع: {{ sk.expected }}</span>
+      </div>
+      <div class="skill-level">
+        <select v-model="sk.current">
+          <option v-for="l in ['Not Yet Demonstrated','Emerging','Developing','Proficient','Mastered']" :key="l">{{l}}</option>
+        </select>
+        <span class="skill-note"><input v-model="sk.note" placeholder="ملاحظة" /></span>
+      </div>
+    </div>
+    <div class="flex-row mt-2">
+      <button class="btn btn-success" @click="analyzeGaps"><i class="fas fa-chart-pie"></i> تحليل الفجوات</button>
+      <span class="text-muted" style="font-size:0.8rem;"><i class="fas fa-info-circle"></i> مستوى الأداء الحالي</span>
+    </div>
+  </div>
+
+  <!-- STEP 4+5 : Report -->
+  <div v-if="reportReady" id="reportSection">
+    <div class="card" style="background:#f3f9ff; border-color:#c9ddee;">
+      <div class="card-title"><i class="fas fa-file-alt"></i> تقرير فجوات المهارات</div>
+      <!-- Student profile -->
+      <div class="grid-2col" style="margin-bottom:1rem;">
+        <div><strong>الطالب:</strong> {{ student.name || 'غير محدد' }} | <strong>الصف:</strong> {{ student.grade }} | <strong>العمر:</strong> {{ student.age }}</div>
+        <div><strong>المادة:</strong> {{ student.subject }} | <strong>المجال:</strong> {{ student.domain }}</div>
+      </div>
+      <div class="report-grid">
+        <div class="stat-box"><h4>نسبة الإتقان الإجمالية</h4><div class="stat-value">{{ masteryPercent }}%</div></div>
+        <div class="stat-box"><h4>المهارات المتقنة</h4><div class="stat-value">{{ masteredCount }}</div></div>
+        <div class="stat-box"><h4>المهارات النامية / فجوة</h4><div class="stat-value">{{ gapCount }}</div></div>
+        <div class="stat-box"><h4>أولوية عالية 🔴</h4><div class="stat-value">{{ highPriorityCount }}</div></div>
+      </div>
+      <hr />
+      <h4 style="margin-bottom:12px;"><i class="fas fa-list"></i> تفاصيل الفجوات والأولويات</h4>
+      <div v-for="(item, i) in gapReport" :key="i" style="background:white; border-radius:16px; padding:0.8rem 1.2rem; margin-bottom:10px; border:1px solid #e5edf5;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;">
+          <div><strong>{{ item.name }}</strong> <span class="badge">{{ item.code }}</span></div>
+          <div><span class="gap-badge">المستوى الحالي: {{ item.current }}</span> <span class="gap-badge">المتوقع: {{ item.expected }}</span></div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;">
+          <span class="gap-badge" :class="{'priority-high': item.priority==='High','priority-med': item.priority==='Medium','priority-low': item.priority==='Low'}">
+            <i class="fas fa-flag"></i> {{ item.priority }} الأولوية
+          </span>
+          <span class="gap-badge">الفجوة: {{ item.gap }}</span>
+          <span class="gap-badge" style="background:#e7f0f7;">{{ item.recommendation }}</span>
+          <span v-if="item.note" class="gap-badge" style="background:#f5f0e7;">ملاحظة: {{ item.note }}</span>
+        </div>
+      </div>
+      <hr />
+      <div style="background:#eef5fa; border-radius:16px; padding:1rem;">
+        <h4><i class="fas fa-lightbulb"></i> الخطوات التالية الموصى بها</h4>
+        <ul style="margin-right:1.2rem; margin-top:6px; color:#1a4d64;">
+          <li v-for="rec in topRecommendations" :key="rec">{{ rec }}</li>
+        </ul>
+        <div class="flex-row mt-2">
+          <button class="btn btn-primary" @click="generateActivities"><i class="fas fa-tasks"></i> توليد أنشطة متعددة المستويات (MASAR Generator™)</button>
+          <span style="font-size:0.8rem; color:#335f78;"><i class="fas fa-arrow-left"></i> مدخل لنظام MASAR</span>
+        </div>
+      </div>
+      <!-- teacher notes -->
+      <div class="field-group mt-2">
+        <label>ملاحظات المعلم</label>
+        <input v-model="teacherNote" placeholder="أضف ملاحظات إضافية..." style="padding:0.7rem; border-radius:14px; border:1px solid #d0dfeb;" />
+      </div>
+      <div class="footer-actions no-print">
+        <div class="print-hide">
+          <button class="btn btn-outline" @click="window.print()"><i class="fas fa-print"></i> طباعة</button>
+          <button class="btn btn-outline" @click="savePDF"><i class="fas fa-file-pdf"></i> حفظ PDF</button>
+        </div>
+        <button class="btn btn-outline" @click="resetAll"><i class="fas fa-undo"></i> بدء جديد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- sample dataset note -->
+  <div style="text-align:center; font-size:0.8rem; color:#59758a; border-top:1px solid #e0eaf3; padding-top:1.5rem; margin-top:1rem;">
+    <i class="fas fa-database"></i> مهارات عينة (Sample Skills Dataset) — غير مرتبطة بقاعدة بيانات MASAR الحقيقية.
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script>
+  (function(){
+    const sampleSkills = [
+      { id: 'SK-01', name: 'قراءة كلمات ثلاثية', code: 'R3.1', expected: 'Proficient', domain: 'قراءة', grade: 'الصف الثاني' },
+      { id: 'SK-02', name: 'فهم المقروء (فقرة قصيرة)', code: 'C2.3', expected: 'Proficient', domain: 'فهم', grade: 'الصف الثالث' },
+      { id: 'SK-03', name: 'جمع الأعداد حتى 20', code: 'M1.4', expected: 'Mastered', domain: 'حساب', grade: 'الصف الأول' },
+      { id: 'SK-04', name: 'كتابة جملة بسيطة', code: 'W2.2', expected: 'Developing', domain: 'كتابة', grade: 'الصف الثاني' },
+      { id: 'SK-05', name: 'تصنيف الكائنات حسب الخواص', code: 'S3.1', expected: 'Proficient', domain: 'منطق', grade: 'الصف الثالث' },
+      { id: 'SK-06', name: 'الضرب في 2', code: 'M2.5', expected: 'Proficient', domain: 'حساب', grade: 'الصف الثاني' },
+      { id: 'SK-07', name: 'ترتيب الكلمات لتكوين جملة', code: 'W1.3', expected: 'Developing', domain: 'كتابة', grade: 'الصف الأول' },
+    ];
+
+    new Vue({
+      el: '#app',
+      data: {
+        student: { name: '', grade: 'الصف الثاني', age: 8, subject: 'اللغة العربية', domain: 'قراءة' },
+        skills: [],
+        reportReady: false,
+        gapReport: [],
+        masteryPercent: 0,
+        masteredCount: 0,
+        gapCount: 0,
+        highPriorityCount: 0,
+        topRecommendations: [],
+        teacherNote: '',
+        lang: 'ar'
+      },
+      methods: {
+        toggleLang() {
+          // simple RTL toggle (visual only)
+          document.dir = (document.dir === 'rtl') ? 'ltr' : 'rtl';
+          this.lang = (this.lang === 'ar') ? 'en' : 'ar';
+        },
+        loadSkills() {
+          // filter sample skills by grade & domain (demo)
+          const grade = this.student.grade;
+          const domain = this.student.domain;
+          let filtered = sampleSkills.filter(s => s.grade === grade);
+          if (domain && domain !== '') {
+            filtered = filtered.filter(s => s.domain === domain);
+          }
+          if (filtered.length === 0) {
+            // fallback: show all
+            filtered = sampleSkills.slice(0, 6);
+          }
+          this.skills = filtered.map(s => ({
+            ...s,
+            current: 'Emerging', // default
+            note: ''
+          }));
+          this.reportReady = false;
+          this.gapReport = [];
+        },
+        analyzeGaps() {
+          if (this.skills.length === 0) return;
+          const levels = ['Not Yet Demonstrated','Emerging','Developing','Proficient','Mastered'];
+          const levelScore = (lvl) => levels.indexOf(lvl) + 1; // 1..5
+          const gapMap = { 'Not Yet Demonstrated': 'Severe', 'Emerging': 'Moderate', 'Developing': 'Moderate', 'Proficient': 'Low', 'Mastered': 'None' };
+          const priorityMap = { 'Severe': 'High', 'Moderate': 'Medium', 'Low': 'Low', 'None': 'Low' };
+          
+          let total = this.skills.length;
+          let mastered = 0;
+          let gaps = 0;
+          let highPrio = 0;
+          let report = [];
+
+          this.skills.forEach(sk => {
+            const expectedScore = levelScore(sk.expected);
+            const currentScore = levelScore(sk.current);
+            const rawGap = expectedScore - currentScore;
+            let gapLabel = 'None';
+            let gapSize = 0;
+            if (rawGap > 2) { gapLabel = 'Severe'; gapSize = 3; }
+            else if (rawGap > 0) { gapLabel = 'Moderate'; gapSize = 2; }
+            else { gapLabel = 'None'; gapSize = 0; } // rawGap <= 0 = الطالب بلغ المعيار أو تجاوزه، لا فجوة
+
+            // priority score: gapSize * importance(2) * prereq(1) simplified
+            const importance = (sk.domain === 'قراءة' || sk.domain === 'حساب') ? 2 : 1.5;
+            const priorityScore = gapSize * importance * 1.2;
+            let priority = 'Low';
+            if (priorityScore >= 4) priority = 'High';
+            else if (priorityScore >= 2) priority = 'Medium';
+            else priority = 'Low';
+
+            // recommendation
+            let rec = 'متابعة';
+            if (priority === 'High') rec = 'تدريب مكثف باستخدام أنشطة متدرجة';
+            else if (priority === 'Medium') rec = 'تعزيز المهارة بأنشطة إضافية';
+            else rec = 'مراجعة دورية';
+
+            if (rawGap <= 0) mastered++; // بلغ معيار الإتقان الخاص بهذا البند أو تجاوزه
+            if (gapLabel !== 'None') gaps++;
+            if (priority === 'High') highPrio++;
+
+            report.push({
+              name: sk.name,
+              code: sk.code,
+              expected: sk.expected,
+              current: sk.current,
+              gap: gapLabel,
+              priority: priority,
+              recommendation: rec,
+              note: sk.note || ''
+            });
+          });
+
+          // sort by priority: High > Medium > Low
+          const prioOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
+          report.sort((a,b) => prioOrder[a.priority] - prioOrder[b.priority]);
+
+          this.gapReport = report;
+          this.masteredCount = mastered;
+          this.gapCount = gaps;
+          this.highPriorityCount = highPrio;
+          this.masteryPercent = Math.round((mastered / total) * 100);
+
+          // top recommendations
+          const recs = report.filter(r => r.priority === 'High').map(r => r.name);
+          this.topRecommendations = recs.length ? recs.map(n => `تركيز على: ${n}`) : ['متابعة المهارات النامية'];
+          this.reportReady = true;
+        },
+        generateActivities() {
+          // prepare payload for MASAR generator (mock)
+          const payload = this.gapReport.map(r => ({
+            student_id: this.student.name || 'unknown',
+            grade: this.student.grade,
+            subject: this.student.subject,
+            skill_id: r.code,
+            skill_name: r.name,
+            expected_level: r.expected,
+            current_level: r.current,
+            gap_level: r.gap,
+            priority: r.priority,
+            teacher_note: r.note || this.teacherNote
+          }));
+          alert('✅ تم توليد الأنشطة المتدرجة (MASAR Multi-Level Generator™) \n' + 
+                'تم تمرير ' + payload.length + ' مهارة إلى المولد. \n(هذه محاكاة، التكامل المستقبلي)');
+          console.log('MASAR Payload:', JSON.stringify(payload, null, 2));
+        },
+        resetAll() {
+          this.student = { name: '', grade: 'الصف الثاني', age: 8, subject: 'اللغة العربية', domain: 'قراءة' };
+          this.skills = [];
+          this.reportReady = false;
+          this.gapReport = [];
+          this.teacherNote = '';
+        },
+        savePDF() {
+          alert('في النسخة التجريبية: استخدم "طباعة" ثم اختر "حفظ كـ PDF"');
+        }
+      },
+      mounted() {
+        // auto load some skills for demo
+        this.loadSkills();
+      }
+    });
+  })();
+</script>
+</body>
+</html>
