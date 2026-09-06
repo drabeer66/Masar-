@@ -32,6 +32,7 @@
 | مولّد الأنشطة متعددة المستويات | [افتح](01_MASAR_TOOLS_PRODUCTS/Activity_Generator/activity-generator.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 | مغامرات مستكشف الفضاء | [افتح](01_MASAR_TOOLS_PRODUCTS/Interactive_Kids_Content/أنشطة_الأطفال_التفاعلية/space-adventures.html) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 | قصص تفاعلية — قصة ميمي | [افتح المجلد](01_MASAR_TOOLS_PRODUCTS/Interactive_Kids_Content/قصص_تفاعلية/) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
+| المحقق الصغير — كتاب، نسخة تفاعلية، وفيديو | [افتح المجلد](01_MASAR_TOOLS_PRODUCTS/Interactive_Kids_Content/المحقق_الصغير/) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 
 ---
 
@@ -89,6 +90,15 @@ MASAR/
         ├── 04_Parent_Support_Toolkit/
         └── 05_Monitoring_and_Evidence/
 ```
+
+---
+
+## القسم الثالث — الشراكات
+*(`03_MASAR_PARTNERSHIPS/`)*
+
+| العنصر | الرابط | الحالة |
+|---|---|---|
+| مسار × GritWrx — نقاط نقاش للشراكة الاستراتيجية | [افتح](03_MASAR_PARTNERSHIPS/GritWrx/MASAR_GritWrx_Strategic_Partnership_Points_for_Discussion.pptx) | ![Demo](https://img.shields.io/badge/-Demo-blue) |
 
 ## نقطة تواصل
 
