@@ -28,6 +28,8 @@
         .rec-card { background: #f9fbe7; border-right: 6px solid #7cb342; padding: 1rem; border-radius: 1rem; margin-bottom: 0.75rem; }
         .activity-card { background: #e3f2fd; border-right: 6px solid #1e88e5; padding: 1rem; border-radius: 1rem; margin-bottom: 0.75rem; }
         .footer-credit { border-top: 2px dashed #c8e6c9; padding-top: 1.5rem; margin-top: 2rem; text-align: center; color: #388e3c; font-weight: 600; font-size: 0.9rem; }
+        body { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+        input, textarea { -webkit-user-select: text; -moz-user-select: text; user-select: text; }
     </style>
 </head>
 <body>
@@ -133,6 +135,7 @@
                 <button onclick="resetToHome()" class="text-xs bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full font-medium">↩️ تغيير البيانات</button>
             </div>
             <div class="flex overflow-x-auto gap-2 pb-2" id="domain-tabs"></div>
+            <div id="incomplete-banner" class="hidden w-full text-center py-3 rounded-xl font-bold text-sm bg-amber-100 text-amber-800 border border-amber-300"></div>
             <div id="questions-container" class="space-y-4"></div>
             <div class="flex justify-between items-center pt-4">
                 <button id="prev-btn" onclick="navigateDomain(-1)" class="btn-secondary text-sm">السابق</button>
@@ -204,6 +207,8 @@
     </main>
 
     <script>
+        // إجراء رادع بسيط لا يمنع مطوّراً محترفاً (لا حماية حقيقية)، فقط يقلل النسخ العرضي
+        document.addEventListener('contextmenu', e => e.preventDefault());
         // ================================================================
         // 1. البيانات الأساسية
         // ================================================================
@@ -987,7 +992,36 @@
         // ================================================================
         // 5. حساب النتائج مع الرسم البياني الجديد (أعمدة)
         // ================================================================
+        // يفحص كل مجالات المرحلة ويعيد أول مجال فيه سؤال بلا إجابة، أو null إذا كانت كل الأسئلة مُجابة
+        function findFirstIncompleteDomain() {
+            const domains = getDomainsForStage(appState.stage);
+            for (let i = 0; i < domains.length; i++) {
+                const domId = domains[i];
+                const questions = getQuestionsForStage(appState.stage, domId);
+                const missing = questions.reduce((count, item, idx) => {
+                    const key = `${domId}_${idx}`;
+                    return appState.answers[key] ? count : count + 1;
+                }, 0);
+                if (missing > 0) {
+                    return { domainIndex: i, domainName: DOMAINS.find(d => d.id === domId)?.name || domId, missing };
+                }
+            }
+            return null;
+        }
+
         function calculateResults() {
+            const incomplete = findFirstIncompleteDomain();
+            if (incomplete) {
+                appState.currentDomainIndex = incomplete.domainIndex;
+                renderTabs(); renderQuestions();
+                const banner = document.getElementById('incomplete-banner');
+                banner.textContent = `⚠️ لا يمكن عرض النتيجة قبل الإجابة على جميع الأسئلة — تبقّى ${incomplete.missing} سؤالاً في مجال "${incomplete.domainName}"`;
+                banner.classList.remove('hidden');
+                banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            document.getElementById('incomplete-banner').classList.add('hidden');
+
             const domains = getDomainsForStage(appState.stage);
             let scores = {};
             let weakDomains = []; let strongDomains = [];
