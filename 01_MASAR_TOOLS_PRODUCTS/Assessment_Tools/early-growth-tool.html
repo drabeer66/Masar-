@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسار — أداة تقييم النمو المبكر والكشف عن الموهبة</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+  body{font-family:'Tajawal',sans-serif;background:#F1EFE8;}
+  h1,h2,h3,.font-head{font-family:'Cairo',sans-serif;}
+  .navy{color:#0C3556;} .bg-navy{background:#0C3556;} .teal{color:#1A9E96;} .bg-teal{background:#1A9E96;}
+  .card{background:#fff;border-radius:1.25rem;box-shadow:0 6px 24px rgba(12,53,86,0.06);border:1px solid #e7e3d8;padding:1.5rem;}
+  .btn-primary{background:#1A9E96;color:#fff;font-weight:700;padding:12px 26px;border-radius:50px;border:none;cursor:pointer;transition:.2s;}
+  .btn-primary:hover{background:#158780;}
+  .btn-secondary{background:#fff;color:#0C3556;font-weight:600;padding:10px 20px;border-radius:50px;border:1.5px solid #0C3556;cursor:pointer;}
+  .hidden{display:none;}
+  .score-btn{width:38px;height:38px;border-radius:10px;border:1.5px solid #d8d3c4;background:#fff;font-weight:700;cursor:pointer;transition:.12s;font-size:.9rem;}
+  .score-btn.active-0{background:#fdecea;border-color:#c0392b;color:#c0392b;}
+  .score-btn.active-1{background:#fef5e7;border-color:#d68910;color:#d68910;}
+  .score-btn.active-2{background:#eaf4fb;border-color:#2874a6;color:#2874a6;}
+  .score-btn.active-3{background:#e8f8f5;border-color:#1A9E96;color:#0e6b65;}
+  .item-row{padding:10px 8px;border-radius:10px;transition:.15s;}
+  .item-row.focused{background:#f1f8fc;box-shadow:inset 0 0 0 2px #1A9E96;}
+  .item-row.answered{background:#fafaf7;}
+  .domain-tab{padding:8px 14px;border-radius:999px;font-size:.78rem;font-weight:700;white-space:nowrap;cursor:pointer;border:1px solid #d8d3c4;background:#fff;color:#555;}
+  .domain-tab.active{background:#0C3556;color:#fff;border-color:#0C3556;}
+  .domain-tab.complete::after{content:' ✓';color:#1A9E96;}
+</style>
+</head>
+<body>
+
+<header class="bg-white shadow-sm border-b sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+    <div>
+      <h1 class="text-lg font-black navy font-head">🌟 مسار — أداة النمو المبكر والكشف عن الموهبة</h1>
+      <p class="text-[11px] text-gray-500">نسخة الأخصائي • ٦٥٧ بنداً • من الولادة حتى ٦ سنوات</p>
+    </div>
+    <span id="code-badge" class="hidden text-xs bg-teal/10 teal px-4 py-1.5 rounded-full font-bold border" style="direction:ltr;border-color:#1A9E96;"></span>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-6">
+
+  <!-- ===== شاشة ١: الترحيب ===== -->
+  <div id="step-welcome">
+    <div class="card text-center space-y-5">
+      <h2 class="text-2xl font-black navy font-head">بدء تقييم جديد</h2>
+      <p class="text-gray-600 text-sm max-w-lg mx-auto">تقييم نمائي شامل عبر ٩ مجالات نمائية، مصمَّم ليكون سريعاً وواضحاً — بلا أي حساب يدوي، والنتيجة جاهزة فور الانتهاء.</p>
+      <button onclick="showKidInfo()" class="btn-primary px-10">ابدأ تقييماً جديداً</button>
+      <div class="pt-3 border-t mt-2">
+        <button onclick="toggleResumeBox()" class="text-xs teal underline">لديّ رمز تقييم سابق لم أُكمله</button>
+        <div id="resume-box" class="hidden mt-3 flex flex-col sm:flex-row gap-2 justify-center items-center">
+          <input type="text" id="resume-code" placeholder="مثال: NM-7X2K9" class="p-2 border rounded-xl text-center" style="direction:ltr">
+          <button onclick="resumeByCode()" class="btn-secondary text-sm">متابعة</button>
+        </div>
+        <p id="resume-msg" class="text-xs mt-1"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== شاشة ٢: بيانات الطفل ===== -->
+  <div id="step-kidinfo" class="hidden">
+    <div class="card space-y-5">
+      <h3 class="text-lg font-bold navy font-head border-r-4 pr-3" style="border-color:#1A9E96">بيانات أولية</h3>
+      <p class="text-xs text-gray-400">لا حاجة لاسم حقيقي — سيُنشأ رمز تعريفي للطفل تلقائياً لحفظ التقييم بخصوصية تامة.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">لقب مختصر للعرض فقط (اختياري)</label>
+          <input type="text" id="kid-name" placeholder="مثال: الحالة رقم ٤" class="w-full p-3 border rounded-xl">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-1">تاريخ الميلاد</label>
+          <input type="date" id="kid-dob" class="w-full p-3 border rounded-xl">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">أو اختر المرحلة يدوياً</label>
+        <select id="manual-stage" class="w-full p-3 border rounded-xl bg-white">
+          <option value="A1">A1 (0-6 أشهر)</option><option value="A2">A2 (6-12 شهراً)</option>
+          <option value="B1">B1 (12-18 شهراً)</option><option value="B2">B2 (18-24 شهراً)</option>
+          <option value="C1">C1 (24-36 شهراً)</option><option value="C2">C2 (36-48 شهراً)</option>
+          <option value="C3">C3 (48-60 شهراً)</option><option value="C4">C4 (60-72 شهراً)</option>
+        </select>
+      </div>
+      <button onclick="startAssessment()" class="btn-primary w-full">بدء التقييم</button>
+    </div>
+  </div>
+
+  <!-- ===== شاشة ٣: التقييم ===== -->
+  <div id="step-assessment" class="hidden space-y-4">
+    <div class="card">
+      <div class="flex justify-between items-center mb-2">
+        <h3 id="stage-title" class="font-black navy font-head"></h3>
+        <span id="progress-text" class="text-xs text-gray-500"></span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2 mb-4"><div id="progress-bar" class="bg-teal h-2 rounded-full" style="width:0%;background:#1A9E96;"></div></div>
+      <div id="domain-tabs" class="flex gap-2 overflow-x-auto pb-2 mb-2"></div>
+      <div class="flex items-center gap-3 text-[11px] text-gray-500 bg-gray-50 rounded-xl p-2 mb-3">
+        <span>📌 دليل الدرجات:</span>
+        <span><b class="text-red-600">٠</b> لا يفعلها إطلاقاً</span>
+        <span><b class="text-amber-600">١</b> نادراً / بمساعدة كبيرة</span>
+        <span><b class="text-blue-600">٢</b> أحياناً / بمساعدة بسيطة</span>
+        <span><b style="color:#0e6b65">٣</b> باستقلالية وانتظام</span>
+        <span class="mr-auto">⌨️ استخدم مفاتيح ٠-٣ للتنقل السريع</span>
+      </div>
+      <div id="items-container" class="space-y-1"></div>
+    </div>
+    <div class="flex justify-between">
+      <button onclick="resetToHome()" class="btn-secondary text-sm">إلغاء والعودة للرئيسية</button>
+      <button onclick="showResults()" class="btn-primary">عرض النتائج</button>
+    </div>
+  </div>
+
+  <!-- ===== شاشة ٤: النتائج ===== -->
+  <div id="step-results" class="hidden space-y-4">
+    <div class="card text-center">
+      <p class="text-xs text-gray-400 mb-1">التصنيف النمائي</p>
+      <h2 id="result-classification" class="text-2xl font-black font-head navy"></h2>
+      <p id="result-interpretation" class="text-gray-600 text-sm max-w-xl mx-auto mt-2"></p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="card"><canvas id="domainChart" height="220"></canvas></div>
+      <div class="card space-y-3">
+        <h4 class="font-bold navy font-head text-sm">التفاصيل الفنية (اختياري)</h4>
+        <div class="text-sm space-y-2" id="tech-details"></div>
+      </div>
+    </div>
+    <div class="flex justify-center gap-3">
+      <button onclick="resetToHome()" class="btn-secondary">تقييم جديد</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const ITEMS = [
+            {code:'COG-A1-01',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يركز بصره على الوجوه البشرية بوضوح'},
+            {code:'COG-A1-02',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتتبع الأشياء بصرياً من جانب لآخر'},
+            {code:'COG-A1-03',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستجيب للأصوات البيئية المختلفة'},
+            {code:'COG-A1-04',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُميِّز بين أصوات مختلفة النبرة'},
+            {code:'COG-A1-05',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يهدأ عند سماع صوت مألوف'},
+            {code:'COG-A1-06',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يلاحظ الحركة والتغيرات في البيئة المحيطة'},
+            {code:'COG-A1-07',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر انتباهاً بصرياً واضحاً لفترات مستدامة'},
+            {code:'COG-A1-08',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتابع الأشياء المتحركة بعيون ثابتة'},
+            {code:'COG-A1-09',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر استجابة للمثيرات الحسية المختلفة'},
+            {code:'COG-A1-10',stage:'A1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يهدأ عند التكرار المنتظم للصوت أو الحركة'},
+            {code:'COG-A1-G1',stage:'A1',domain:'المعرفي',type:'موهبة',w:2,text:'يحدِّق في الوجوه ويفحصها بانتباه استثنائي غير معتاد لعمره'},
+            {code:'COG-A1-G2',stage:'A1',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر يقظة ووعياً بيئياً يفوق المتوقع لعمره'},
+            {code:'COG-A1-G3',stage:'A1',domain:'المعرفي',type:'موهبة',w:2,text:'يميِّز بين الوجوه المألوفة وغير المألوفة في وقت مبكر'},
+            {code:'COG-A1-G4',stage:'A1',domain:'المعرفي',type:'موهبة',w:2,text:'يتتبع جسماً متحركاً بدقة بصرية استثنائية'},
+            {code:'COG-A1-G5',stage:'A1',domain:'المعرفي',type:'موهبة',w:2,text:'يتوقف عن البكاء مسبقاً قبل اكتمال الإجراء المألوف'},
+            {code:'LR-A1-01',stage:'A1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'عند تعريضه لصوت جديد يُبدي انتباهاً وتركيزاً فورياً يفوق أقرانه'},
+            {code:'LR-A1-02',stage:'A1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُصدر صوتاً مقارِباً لصوت سمعه بعد مرة واحدة'},
+            {code:'LR-A1-03',stage:'A1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُظهر فضولاً مستمراً تجاه المحفزات الجديدة في بيئته المحدودة'},
+            {code:'LR-A1-04',stage:'A1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يستكشف شيئاً بسيطاً في يده باستمرار وعمق غير معتاد'},
+            {code:'LAN-A1-01',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُصدر أصوات مناغاة (كوو، آه)'},
+            {code:'LAN-A1-02',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستجيب للصوت بالتوقف أو الحركة'},
+            {code:'LAN-A1-03',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يلتفت نحو مصدر الصوت'},
+            {code:'LAN-A1-04',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُميِّز صوت الأم عن بقية الأصوات'},
+            {code:'LAN-A1-05',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُصدر أصواتاً عند التفاعل والمداعبة'},
+            {code:'LAN-A1-06',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُقلِّد أصواتاً بسيطة يسمعها'},
+            {code:'LAN-A1-07',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُغيِّر نبرة صوته تعبيراً عن حالات مختلفة'},
+            {code:'LAN-A1-08',stage:'A1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُصدر أصواتاً تعبيرية للرضا أو الانزعاج'},
+            {code:'LAN-A1-G1',stage:'A1',domain:'اللغوي',type:'موهبة',w:2,text:'يستجيب للكلام بتقليد الفم والشفتين في وقت مبكر جداً'},
+            {code:'LAN-A1-G2',stage:'A1',domain:'اللغوي',type:'موهبة',w:2,text:'يُصدر تنويعاً صوتياً أوسع من المتوقع لعمره'},
+            {code:'LAN-A1-G3',stage:'A1',domain:'اللغوي',type:'موهبة',w:2,text:'يُظهر حساسية واضحة لإيقاع الكلام ونبراته'},
+            {code:'MOT-A1-01',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يرفع رأسه لفترة عند الاستلقاء على بطنه'},
+            {code:'MOT-A1-02',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يُحرِّك أطرافه بحرية وانسيابية'},
+            {code:'MOT-A1-03',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يُمسك الأشياء الموضوعة بيده لفترة قصيرة'},
+            {code:'MOT-A1-04',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يفتح ويغلق يديه بشكل منتظم'},
+            {code:'MOT-A1-05',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يمد يده نحو الأشياء القريبة'},
+            {code:'MOT-A1-06',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يتحكم جزئياً في وضع رأسه'},
+            {code:'MOT-A1-07',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يُحاول الانقلاب من وضع الاستلقاء'},
+            {code:'MOT-A1-08',stage:'A1',domain:'الحركي',type:'أساسي',w:1.5,text:'يُثبِّت نظره أثناء الحركة الذاتية'},
+            {code:'MOT-A1-G1',stage:'A1',domain:'الحركي',type:'موهبة',w:2,text:'يرفع رأسه ويُثبِّته لفترة أطول من المتوقع لعمره'},
+            {code:'MOT-A1-G2',stage:'A1',domain:'الحركي',type:'موهبة',w:2,text:'يُظهر تنسيقاً يد-عين مبكراً في الإمساك'},
+            {code:'SOC-A1-01',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يبتسم للآخرين ابتسامة اجتماعية حقيقية'},
+            {code:'SOC-A1-02',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُحافظ على التواصل البصري مع مقدم الرعاية'},
+            {code:'SOC-A1-03',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يهدأ عند الحمل والمداعبة'},
+            {code:'SOC-A1-04',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يستجيب للمداعبة بأصوات أو حركات'},
+            {code:'SOC-A1-05',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر اهتماماً واضحاً بالوجوه البشرية'},
+            {code:'SOC-A1-06',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يضحك بصوت عند اللعب التفاعلي'},
+            {code:'SOC-A1-07',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتفاعل مع الصوت العاطفي الحنون'},
+            {code:'SOC-A1-08',stage:'A1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر استجابة لابتسامة الآخر'},
+            {code:'SOC-A1-G1',stage:'A1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُظهر قراءة دقيقة لتعبيرات الوجه المختلفة في وقت مبكر'},
+            {code:'SOC-A1-G2',stage:'A1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُبادر بالتواصل البصري ويُديمه بشكل استثنائي'},
+            {code:'SOC-A1-G3',stage:'A1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُعبِّر عن مشاعر متنوعة (فرح، قلق، استغراب) بوضوح لافت'},
+            {code:'ADP-A1-01',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يرضع أو يأكل بانتظام وبشكل منظم'},
+            {code:'ADP-A1-02',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'ينام بأنماط متكررة نسبياً'},
+            {code:'ADP-A1-03',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُظهر إشارات الجوع بوضوح'},
+            {code:'ADP-A1-04',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُظهر إشارات الشبع (يبتعد، يهدأ)'},
+            {code:'ADP-A1-05',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يهدأ بعد التغذية بشكل منتظم'},
+            {code:'ADP-A1-06',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يستجيب للروتين اليومي المعتاد'},
+            {code:'ADP-A1-07',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتقبَّل إجراءات النظافة والعناية'},
+            {code:'ADP-A1-08',stage:'A1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُظهر نمط نوم-صحوة متكرراً'},
+            {code:'ADP-A1-G1',stage:'A1',domain:'التكيفي',type:'موهبة',w:2,text:'يحتاج نوماً أقل من المعتاد مع يقظة ونشاط واضح'},
+            {code:'ADP-A1-G2',stage:'A1',domain:'التكيفي',type:'موهبة',w:2,text:'يُظهر انتباهاً واهتماماً بالبيئة خلال فترات يقظته القصيرة'},
+            {code:'MUS-A1-01',stage:'A1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يهدأ أو يُصغي عند سماع أصوات موسيقية أو غناء'},
+            {code:'MUS-A1-02',stage:'A1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُحرِّك جسمه استجابةً للإيقاع (هزّ الرأس أو الجذع)'},
+            {code:'MUS-A1-03',stage:'A1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز الأصوات الموسيقية عن الضوضاء بردة فعل مختلفة'},
+            {code:'MUS-A1-04',stage:'A1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يستجيب للغناء بأصوات أو ابتسامة في وقت مبكر'},
+            {code:'MUS-A1-G1',stage:'A1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُظهر استجابةً إيقاعية واضحة للموسيقى تفوق المتوقع لعمره'},
+            {code:'MUS-A1-G2',stage:'A1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُميِّز بين نغمات مختلفة بردود أفعال واضحة ومتباينة'},
+            {code:'COG-A2-01',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يبحث عن الأشياء المخفية جزئياً'},
+            {code:'COG-A2-02',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يبحث عن الأشياء المخفية كلياً'},
+            {code:'COG-A2-03',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستكشف الأشياء بالفم واليد'},
+            {code:'COG-A2-04',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'ينقل الأشياء بين يديه'},
+            {code:'COG-A2-05',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يضرب الأشياء ببعضها ويلاحظ الأثر'},
+            {code:'COG-A2-06',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُسقط الأشياء عمداً ويتابعها'},
+            {code:'COG-A2-07',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُكرِّر الفعل للحصول على النتيجة ذاتها'},
+            {code:'COG-A2-08',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر فهماً بسيطاً للسبب والنتيجة'},
+            {code:'COG-A2-09',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُراقب حركة الأشياء باهتمام'},
+            {code:'COG-A2-10',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُحاول الوصول للأشياء البعيدة بطرق متعددة'},
+            {code:'COG-A2-11',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُميِّز بين الأشياء المألوفة والجديدة'},
+            {code:'COG-A2-12',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر اهتماماً بالألعاب المختلفة'},
+            {code:'COG-A2-13',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يضع الأشياء داخل حاوية ويُخرجها'},
+            {code:'COG-A2-14',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُقلِّد أفعالاً بسيطة يراها'},
+            {code:'COG-A2-15',stage:'A2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتوقع نتيجة فعل متكرر قبل حدوثه'},
+            {code:'COG-A2-G1',stage:'A2',domain:'المعرفي',type:'موهبة',w:2,text:'يتعلم من مشاهدة الآخرين مرة واحدة ويُعيد تطبيقه فوراً'},
+            {code:'COG-A2-G2',stage:'A2',domain:'المعرفي',type:'موهبة',w:2,text:'يُحلّ مشكلة بسيطة بطريقة لم يُعلَّمها'},
+            {code:'COG-A2-G3',stage:'A2',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر ذاكرة استثنائية لأماكن الأشياء'},
+            {code:'COG-A2-G4',stage:'A2',domain:'المعرفي',type:'موهبة',w:2,text:'يُركِّز على لعبة أو نشاط لفترة أطول بكثير من أقرانه'},
+            {code:'LR-A2-01',stage:'A2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يتعلم من مشاهدة فعل جديد مرة واحدة ويُعيد محاولته فوراً'},
+            {code:'LR-A2-02',stage:'A2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُظهر فضولاً شديداً ومتواصلاً تجاه الأشياء الجديدة في بيئة محدودة'},
+            {code:'LR-A2-03',stage:'A2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يستخدم أشياء بسيطة بطرق استكشافية متجددة'},
+            {code:'LR-A2-04',stage:'A2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُركِّز على نشاط استكشافي لفترة أطول من المتوقع لعمره'},
+            {code:'LAN-A2-01',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستجيب لاسمه باستمرار'},
+            {code:'LAN-A2-02',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم كلمة (لا) ويستجيب لها'},
+            {code:'LAN-A2-03',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُقلِّد الأصوات والمقاطع'},
+            {code:'LAN-A2-04',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُصدر مقاطع صوتية (با، دا، ما)'},
+            {code:'LAN-A2-05',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم نبرات صوت مختلفة للتعبير'},
+            {code:'LAN-A2-06',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم الإيماءات للتواصل (يشير، يلوِّح)'},
+            {code:'LAN-A2-07',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم أوامر بسيطة'},
+            {code:'LAN-A2-08',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يبدأ باستخدام كلمات بسيطة (ماما، بابا)'},
+            {code:'LAN-A2-09',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُقلِّد كلمات بسيطة يسمعها'},
+            {code:'LAN-A2-10',stage:'A2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستجيب لنبرة الصوت العاطفية'},
+            {code:'LAN-A2-G1',stage:'A2',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم أكثر من 3 كلمات وظيفية قبل نهاية الشهر الثاني عشر'},
+            {code:'LAN-A2-G2',stage:'A2',domain:'اللغوي',type:'موهبة',w:2,text:'يستوعب كلمة جديدة من مرة واحدة'},
+            {code:'LAN-A2-G3',stage:'A2',domain:'اللغوي',type:'موهبة',w:2,text:'يُصدر تنويعاً لغوياً وصوتياً أوسع بكثير من أقرانه'},
+            {code:'MOT-A2-01',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'يجلس بدون دعم لفترة'},
+            {code:'MOT-A2-02',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'ينتقل من وضع لآخر بسلاسة'},
+            {code:'MOT-A2-03',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'يزحف على البطن أو يحبو'},
+            {code:'MOT-A2-04',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'يقف بمساعدة أو بالاستناد'},
+            {code:'MOT-A2-05',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'يُمسك الأشياء بإحكام أكبر'},
+            {code:'MOT-A2-06',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'يستخدم القبضة الدقيقة (إبهام وسبابة)'},
+            {code:'MOT-A2-07',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'يلتقط أشياء صغيرة بدقة'},
+            {code:'MOT-A2-08',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'يرمي الأشياء بقصد'},
+            {code:'MOT-A2-09',stage:'A2',domain:'الحركي',type:'أساسي',w:1.5,text:'ينتقل مستنداً على الأثاث'},
+            {code:'MOT-A2-G1',stage:'A2',domain:'الحركي',type:'موهبة',w:2,text:'يُظهر تنسيقاً حركياً دقيقاً يفوق المتوقع لعمره'},
+            {code:'MOT-A2-G2',stage:'A2',domain:'الحركي',type:'موهبة',w:2,text:'يتعلم حركة جديدة من مشاهدة واحدة'},
+            {code:'SOC-A2-01',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتفاعل اجتماعياً مع الآخرين بوضوح'},
+            {code:'SOC-A2-02',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر تعلقاً آمناً بمقدم الرعاية'},
+            {code:'SOC-A2-03',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر قلق الغرباء'},
+            {code:'SOC-A2-04',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يبتسم ويضحك عند التفاعل'},
+            {code:'SOC-A2-05',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُقلِّد تعبيرات الوجه'},
+            {code:'SOC-A2-06',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يطلب الانتباه بصوت أو حركة'},
+            {code:'SOC-A2-07',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر مشاعر متنوعة وواضحة'},
+            {code:'SOC-A2-08',stage:'A2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتبع إشارات الوجه والعيون'},
+            {code:'SOC-A2-G1',stage:'A2',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُظهر تعاطفاً واضحاً مع بكاء طفل آخر'},
+            {code:'SOC-A2-G2',stage:'A2',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يقرأ المشاعر من تعبيرات الوجه بدقة لافتة'},
+            {code:'ADP-A2-01',stage:'A2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يأكل بمساعدة ويُحاول الإمساك بالطعام'},
+            {code:'ADP-A2-02',stage:'A2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يشرب من كوب بمساعدة'},
+            {code:'ADP-A2-03',stage:'A2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُمسك الملعقة ويُحاول استخدامها'},
+            {code:'ADP-A2-04',stage:'A2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في ارتداء الملابس بمد يده'},
+            {code:'ADP-A2-05',stage:'A2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتبع روتيناً يومياً واضحاً'},
+            {code:'ADP-A2-06',stage:'A2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يستجيب للتوجيه البسيط'},
+            {code:'ADP-A2-G1',stage:'A2',domain:'التكيفي',type:'موهبة',w:2,text:'يُظهر استقلالية في الأكل والنشاط أبكر من أقرانه'},
+            {code:'ADP-A2-G2',stage:'A2',domain:'التكيفي',type:'موهبة',w:2,text:'يتكيف مع التغييرات في الروتين بمرونة لافتة'},
+            {code:'MUS-A2-01',stage:'A2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُصدر أصواتاً إيقاعية متكررة في استجابة للموسيقى'},
+            {code:'MUS-A2-02',stage:'A2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُحرِّك يديه أو جسمه بشكل إيقاعي عند سماع أغنية مألوفة'},
+            {code:'MUS-A2-03',stage:'A2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز الأغاني المألوفة عن الجديدة بهدوء أو تنبّه'},
+            {code:'MUS-A2-04',stage:'A2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يستجيب للتغيير المفاجئ في الإيقاع أو النغمة'},
+            {code:'MUS-A2-05',stage:'A2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُقلِّد إيقاعاً بسيطاً بالتصفيق أو الطرق'},
+            {code:'MUS-A2-G1',stage:'A2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُقلِّد نغمة أو لحناً قصيراً بدقة لافتة لعمره'},
+            {code:'MUS-A2-G2',stage:'A2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُبادر بإصدار أصوات إيقاعية منتظمة بمبادرة ذاتية'},
+            {code:'MUS-A2-G3',stage:'A2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُفضِّل الأغاني ذات الإيقاع الواضح ويُركِّز عليها بشكل استثنائي'},
+            {code:'COG-B1-01',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُكدِّس مكعبين أو أكثر'},
+            {code:'COG-B1-02',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستخدم الأشياء بطريقتها الصحيحة (كوب، ملعقة)'},
+            {code:'COG-B1-03',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يبحث عن الأشياء المخفية كلياً'},
+            {code:'COG-B1-04',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُقلِّد أفعالاً مألوفة يراها'},
+            {code:'COG-B1-05',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُجرِّب حلولاً متعددة للمشكلة'},
+            {code:'COG-B1-06',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يضع أشياء صغيرة داخل أشياء أكبر'},
+            {code:'COG-B1-07',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُميِّز بين الأشياء المتشابهة'},
+            {code:'COG-B1-08',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يربط الفعل بنتيجته المتوقعة'},
+            {code:'COG-B1-09',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتذكر موقع شيء مألوف'},
+            {code:'COG-B1-10',stage:'B1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر دهشة أو تساؤلاً عند رؤية شيء جديد'},
+            {code:'COG-B1-G1',stage:'B1',domain:'المعرفي',type:'موهبة',w:2,text:'يُكدِّس 6 مكعبات أو أكثر بمهارة'},
+            {code:'COG-B1-G2',stage:'B1',domain:'المعرفي',type:'موهبة',w:2,text:'يُجري تصنيفاً بدائياً للأشياء حسب لون أو شكل'},
+            {code:'COG-B1-G3',stage:'B1',domain:'المعرفي',type:'موهبة',w:2,text:'يُحلّ لغزاً بسيطاً من قطعتين'},
+            {code:'COG-B1-G4',stage:'B1',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر فهماً للكمية (واحد / أكثر من واحد)'},
+            {code:'LR-B1-01',stage:'B1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يتقن مهارة حركية بسيطة جديدة من مشاهدة واحدة'},
+            {code:'LR-B1-02',stage:'B1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُظهر فضولاً شديداً في استكشاف أدوات منزلية بسيطة'},
+            {code:'LR-B1-03',stage:'B1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يستخدم جسماً بسيطاً بطريقتين مختلفتين في الجلسة ذاتها'},
+            {code:'LR-B1-04',stage:'B1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يسأل بالإشارة أو الصوت عن شيء يراه لأول مرة'},
+            {code:'LAN-B1-01',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يقول 5–10 كلمات وظيفية'},
+            {code:'LAN-B1-02',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم أوامر بسيطة من خطوة واحدة'},
+            {code:'LAN-B1-03',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُشير إلى الأشياء التي يطلبها'},
+            {code:'LAN-B1-04',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم الإيماءات الاجتماعية (يلوِّح، يُشير)'},
+            {code:'LAN-B1-05',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُسمِّي أشخاصاً مألوفين'},
+            {code:'LAN-B1-06',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُكرِّر كلمات يسمعها'},
+            {code:'LAN-B1-07',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُعبِّر بصوت عن رغباته'},
+            {code:'LAN-B1-08',stage:'B1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم كلمات يومية في سياقها'},
+            {code:'LAN-B1-G1',stage:'B1',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم 20 كلمة أو أكثر'},
+            {code:'LAN-B1-G2',stage:'B1',domain:'اللغوي',type:'موهبة',w:2,text:'يُكوِّن جملاً من كلمتين بشكل متكرر'},
+            {code:'LAN-B1-G3',stage:'B1',domain:'اللغوي',type:'موهبة',w:2,text:'يُسمِّي الصور في الكتب بدقة'},
+            {code:'LAN-B1-G4',stage:'B1',domain:'اللغوي',type:'موهبة',w:2,text:'يفهم تعليمات من خطوتين'},
+            {code:'MOT-B1-01',stage:'B1',domain:'الحركي',type:'أساسي',w:1.5,text:'يمشي بمفرده بثبات'},
+            {code:'MOT-B1-02',stage:'B1',domain:'الحركي',type:'أساسي',w:1.5,text:'يصعد الدرج بمساعدة'},
+            {code:'MOT-B1-03',stage:'B1',domain:'الحركي',type:'أساسي',w:1.5,text:'ينحني لالتقاط الأشياء دون سقوط'},
+            {code:'MOT-B1-04',stage:'B1',domain:'الحركي',type:'أساسي',w:1.5,text:'يرمي كرة أمامه'},
+            {code:'MOT-B1-05',stage:'B1',domain:'الحركي',type:'أساسي',w:1.5,text:'يفتح الكتب ويُقلِّب صفحاتها'},
+            {code:'MOT-B1-06',stage:'B1',domain:'الحركي',type:'أساسي',w:1.5,text:'يضع أشياء في وعاء بدقة'},
+            {code:'MOT-B1-07',stage:'B1',domain:'الحركي',type:'أساسي',w:1.5,text:'يُحافظ على توازنه أثناء الحركة'},
+            {code:'MOT-B1-G1',stage:'B1',domain:'الحركي',type:'موهبة',w:2,text:'يُظهر مهارة حركية دقيقة فوق المتوقع'},
+            {code:'MOT-B1-G2',stage:'B1',domain:'الحركي',type:'موهبة',w:2,text:'يُقلِّب صفحات الكتاب بأصبع واحد'},
+            {code:'SOC-B1-01',stage:'B1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُقلِّد الآخرين في أفعالهم'},
+            {code:'SOC-B1-02',stage:'B1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر تعلقاً آمناً وواضحاً'},
+            {code:'SOC-B1-03',stage:'B1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يلعب بجانب الكبار'},
+            {code:'SOC-B1-04',stage:'B1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يطلب الانتباه بطرق متنوعة'},
+            {code:'SOC-B1-05',stage:'B1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر مشاعر متنوعة وواضحة'},
+            {code:'SOC-B1-06',stage:'B1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يستجيب للمديح والتشجيع'},
+            {code:'SOC-B1-07',stage:'B1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُعبِّر عن الرفض بوضوح'},
+            {code:'SOC-B1-G1',stage:'B1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُظهر تعاطفاً واضحاً مع انزعاج شخص آخر'},
+            {code:'SOC-B1-G2',stage:'B1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يبكي أو يضطرب عند رؤية مواقف حزينة'},
+            {code:'ADP-B1-01',stage:'B1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُحاول إطعام نفسه بالملعقة'},
+            {code:'ADP-B1-02',stage:'B1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يشرب من كوب بمساعدة بسيطة'},
+            {code:'ADP-B1-03',stage:'B1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في خلع بعض الملابس'},
+            {code:'ADP-B1-04',stage:'B1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتبع روتيناً يومياً منظماً'},
+            {code:'ADP-B1-05',stage:'B1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُظهر إشارات الحاجة للحمام'},
+            {code:'ADP-B1-06',stage:'B1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتعاون أثناء العناية اليومية'},
+            {code:'ADP-B1-G1',stage:'B1',domain:'التكيفي',type:'موهبة',w:2,text:'يُحاول ارتداء قطعة ملابس بسيطة بمبادرة ذاتية'},
+            {code:'ADP-B1-G2',stage:'B1',domain:'التكيفي',type:'موهبة',w:2,text:'يُظهر وعياً بالنظافة والترتيب بشكل لافت'},
+            {code:'MUS-B1-01',stage:'B1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يتمايل أو يرقص عند سماع الموسيقى'},
+            {code:'MUS-B1-02',stage:'B1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُقلِّد ألحاناً بسيطة بصوت واضح'},
+            {code:'MUS-B1-03',stage:'B1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز بين الأغاني المختلفة ويستجيب لكل بشكل مختلف'},
+            {code:'MUS-B1-04',stage:'B1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يطرق أشياء إيقاعياً أو يُصدر إيقاعاً بالأدوات المتاحة'},
+            {code:'MUS-B1-05',stage:'B1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُشارك في الأغاني الاجتماعية بتفاعل واضح'},
+            {code:'MUS-B1-06',stage:'B1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يستمر في الاستماع للموسيقى لفترات أطول من أقرانه'},
+            {code:'MUS-B1-G1',stage:'B1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُقلِّد لحناً من ثلاث نغمات أو أكثر بدقة'},
+            {code:'MUS-B1-G2',stage:'B1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُنتِج إيقاعاً منتظماً بأشياء يومية مستقلاً'},
+            {code:'MUS-B1-G3',stage:'B1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُميِّز خطأً في لحن مألوف ويُظهر ردة فعل واضحة'},
+            {code:'IRP-B1-01',stage:'B1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُعبِّر بوضوح عن شعور داخلي (فرح، حزن، خوف) بصوت أو حركة'},
+            {code:'IRP-B1-02',stage:'B1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُشير إلى مصدر ضيقه الداخلي'},
+            {code:'IRP-B1-03',stage:'B1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُهدِّئ نفسه بطريقة معتادة'},
+            {code:'IRP-B1-04',stage:'B1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُظهر وعياً بأثر مشاعره على من حوله'},
+            {code:'IRP-B1-G1',stage:'B1',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُعبِّر عن حالة داخلية دقيقة لا يُظهرها أقرانه (ارتباك، ترقب، دهشة)'},
+            {code:'IRP-B1-G2',stage:'B1',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُميِّز بين تعبه وجوعه وضيقه العاطفي بطرق مختلفة'},
+            {code:'COG-B2-01',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُطابق الأشياء المتشابهة'},
+            {code:'COG-B2-02',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يحل مشكلات بسيطة بطرق متعددة'},
+            {code:'COG-B2-03',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُميِّز الأحجام (كبير / صغير)'},
+            {code:'COG-B2-04',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر لعباً خيالياً بسيطاً'},
+            {code:'COG-B2-05',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُفرز الأشياء حسب اللون'},
+            {code:'COG-B2-06',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتبع تعليمات من خطوتين'},
+            {code:'COG-B2-07',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُكدِّس 4 مكعبات أو أكثر'},
+            {code:'COG-B2-08',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستخدم الذاكرة القريبة بفاعلية'},
+            {code:'COG-B2-09',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُقلِّد تسلسلاً بسيطاً من فعلين'},
+            {code:'COG-B2-10',stage:'B2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستخدم الأدوات البسيطة بشكل صحيح'},
+            {code:'COG-B2-G1',stage:'B2',domain:'المعرفي',type:'موهبة',w:2,text:'يُفرز الأشياء حسب أكثر من صفة (لون وشكل)'},
+            {code:'COG-B2-G2',stage:'B2',domain:'المعرفي',type:'موهبة',w:2,text:'يَعدّ بصرياً حتى 3 بدون تعليم رسمي'},
+            {code:'COG-B2-G3',stage:'B2',domain:'المعرفي',type:'موهبة',w:2,text:'يحل لغزاً من 4–6 قطع'},
+            {code:'COG-B2-G4',stage:'B2',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر تفكيراً سببياً: ماذا يحدث لو...'},
+            {code:'LR-B2-01',stage:'B2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يتعلم كلمة جديدة ويستخدمها في نفس الجلسة'},
+            {code:'LR-B2-02',stage:'B2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُحاول حل مشكلة بسيطة بطريقة لم يُعلَّمها'},
+            {code:'LR-B2-03',stage:'B2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يستخدم المواد المتاحة بطرق إبداعية غير متوقعة'},
+            {code:'LR-B2-04',stage:'B2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يسأل أسئلة متتالية حول شيء جديد حتى يستوعبه'},
+            {code:'LAN-B2-01',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم كلمتين معاً بشكل مقصود'},
+            {code:'LAN-B2-02',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُسمِّي الأشياء اليومية بدقة'},
+            {code:'LAN-B2-03',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم أوامر أكثر تعقيداً'},
+            {code:'LAN-B2-04',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُشير إلى الصور في الكتاب'},
+            {code:'LAN-B2-05',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم الضمائر البسيطة (أنا، لي)'},
+            {code:'LAN-B2-06',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُسمِّي أجزاء الجسم الرئيسية'},
+            {code:'LAN-B2-07',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يطرح أسئلة بسيطة (أين؟ ما؟)'},
+            {code:'LAN-B2-08',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم مفردات تفوق 50 كلمة'},
+            {code:'LAN-B2-09',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يحكي أحداثاً بسيطة بكلمتين أو ثلاث'},
+            {code:'LAN-B2-10',stage:'B2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم صيغة النفي (لا / ما)'},
+            {code:'LAN-B2-G1',stage:'B2',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم جملاً كاملة من 3–4 كلمات'},
+            {code:'LAN-B2-G2',stage:'B2',domain:'اللغوي',type:'موهبة',w:2,text:'يسأل أسئلة لماذا؟ وكيف؟'},
+            {code:'LAN-B2-G3',stage:'B2',domain:'اللغوي',type:'موهبة',w:2,text:'يحكي قصة قصيرة بتسلسل'},
+            {code:'MOT-B2-01',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يجري دون سقوط متكرر'},
+            {code:'MOT-B2-02',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يصعد ويهبط الدرج بمساعدة'},
+            {code:'MOT-B2-03',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يقفز بكلتا القدمين معاً'},
+            {code:'MOT-B2-04',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يركل كرة بقدم واحدة'},
+            {code:'MOT-B2-05',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يرسم خطوطاً بالقلم'},
+            {code:'MOT-B2-06',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يُركِّب لعبة ذات قطعتين'},
+            {code:'MOT-B2-07',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يلتقط أشياء دقيقة بدقة أكبر'},
+            {code:'MOT-B2-08',stage:'B2',domain:'الحركي',type:'أساسي',w:1.5,text:'يحافظ على توازنه أثناء الوقوف على أصابع قدميه'},
+            {code:'MOT-B2-G1',stage:'B2',domain:'الحركي',type:'موهبة',w:2,text:'يرسم دائرة أو حرفاً بمبادرة ذاتية'},
+            {code:'MOT-B2-G2',stage:'B2',domain:'الحركي',type:'موهبة',w:2,text:'يُؤدي مهارة رياضية بسيطة بدقة ملحوظة'},
+            {code:'SOC-B2-01',stage:'B2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يلعب إلى جانب الأطفال (لعب موازٍ)'},
+            {code:'SOC-B2-02',stage:'B2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر مشاعره بوضوح وتنوع'},
+            {code:'SOC-B2-03',stage:'B2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يطلب مساعدة الكبار عند الحاجة'},
+            {code:'SOC-B2-04',stage:'B2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُعبِّر عن ملكيته للأشياء'},
+            {code:'SOC-B2-05',stage:'B2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُحاول إرضاء الكبار'},
+            {code:'SOC-B2-06',stage:'B2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُقلِّد أفعال الكبار في اللعب'},
+            {code:'SOC-B2-07',stage:'B2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر خجلاً أو تحفظاً مع الغرباء'},
+            {code:'SOC-B2-G1',stage:'B2',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُبدي تعاطفاً فعلياً (يحمل لعبة لطفل يبكي)'},
+            {code:'SOC-B2-G2',stage:'B2',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُعبِّر عن مشاعر مُركَّبة (خجل، فخر، حسد)'},
+            {code:'ADP-B2-01',stage:'B2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يأكل بالملعقة باستقلال نسبي'},
+            {code:'ADP-B2-02',stage:'B2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يشرب من كوب باستقلال'},
+            {code:'ADP-B2-03',stage:'B2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُحاول خلع الملابس البسيطة'},
+            {code:'ADP-B2-04',stage:'B2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُظهر اهتماماً بالتدرب على الحمام'},
+            {code:'ADP-B2-05',stage:'B2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتبع روتيناً يومياً ثابتاً'},
+            {code:'ADP-B2-06',stage:'B2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في ترتيب ألعابه'},
+            {code:'ADP-B2-G1',stage:'B2',domain:'التكيفي',type:'موهبة',w:2,text:'يستخدم الحمام باستقلال مبكر لعمره'},
+            {code:'ADP-B2-G2',stage:'B2',domain:'التكيفي',type:'موهبة',w:2,text:'يرتدي قطعة ملابس بسيطة بمبادرة ذاتية'},
+            {code:'MUS-B2-01',stage:'B2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُغنِّي مقطعاً من أغنية مألوفة بوضوح'},
+            {code:'MUS-B2-02',stage:'B2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُقلِّد إيقاعاً بسيطاً بعد سماعه مرتين أو ثلاث'},
+            {code:'MUS-B2-03',stage:'B2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز بين الموسيقى السريعة والبطيئة بحركة مختلفة'},
+            {code:'MUS-B2-04',stage:'B2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُشارك في الغناء الجماعي مع الكبار'},
+            {code:'MUS-B2-05',stage:'B2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يطلب الاستماع لأغنية بعينها مراراً'},
+            {code:'MUS-B2-06',stage:'B2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُصدر ألحاناً من إبداعه أثناء اللعب'},
+            {code:'MUS-B2-G1',stage:'B2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُغنِّي أغنية كاملة بكلمات صحيحة ودقة لحنية لافتة'},
+            {code:'MUS-B2-G2',stage:'B2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُنتِج إيقاعاً مُعقداً من خطوتين أو ثلاث'},
+            {code:'MUS-B2-G3',stage:'B2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُلاحظ الخطأ في أغنية مألوفة ويُصحِّحه'},
+            {code:'IRP-B2-01',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُسمِّي مشاعره بكلمات بسيطة (حزين، خايف، زعلان)'},
+            {code:'IRP-B2-02',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُشير إلى نفسه عند الحديث عن مشاعره'},
+            {code:'IRP-B2-03',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُحاول تهدئة نفسه باستراتيجية متكررة'},
+            {code:'IRP-B2-04',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُعبِّر عن تفضيلاته الداخلية بوضوح'},
+            {code:'IRP-B2-05',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُلاحظ تغيُّراً في مشاعره ويُشير إليه'},
+            {code:'IRP-B2-G1',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُربط بين سبب خارجي ومشاعره الداخلية'},
+            {code:'IRP-B2-G2',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُعبِّر عن مشاعر مُركَّبة كالخجل والفخر بوضوح لافت'},
+            {code:'IRP-B2-G3',stage:'B2',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُهدِّئ نفسه باستراتيجية واضحة دون مساعدة الكبار'},
+            {code:'COG-C1-01',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُفرز الأشياء حسب اللون والشكل'},
+            {code:'COG-C1-02',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يفهم مفاهيم: كبير/صغير، فوق/تحت، قبل/بعد'},
+            {code:'COG-C1-03',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يَعدّ حتى 10 بشكل وظيفي'},
+            {code:'COG-C1-04',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يحل لغزاً من 6–12 قطعة'},
+            {code:'COG-C1-05',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُقلِّد تسلسلاً من 3 أفعال'},
+            {code:'COG-C1-06',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتذكر أحداثاً ماضية بتفاصيل'},
+            {code:'COG-C1-07',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يفهم مفهوم الزمن (الآن، غداً، أمس)'},
+            {code:'COG-C1-08',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستخدم اللعب الخيالي الموسَّع'},
+            {code:'COG-C1-09',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُطابق الأشكال الهندسية الأساسية'},
+            {code:'COG-C1-10',stage:'C1',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُركِّز على نشاط لمدة 10 دقائق'},
+            {code:'COG-C1-G1',stage:'C1',domain:'المعرفي',type:'موهبة',w:2,text:'يَعدّ حتى 20 أو أكثر'},
+            {code:'COG-C1-G2',stage:'C1',domain:'المعرفي',type:'موهبة',w:2,text:'يحل لغزاً من 24 قطعة أو أكثر'},
+            {code:'COG-C1-G3',stage:'C1',domain:'المعرفي',type:'موهبة',w:2,text:'يُجري جمعاً بسيطاً ذهنياً'},
+            {code:'COG-C1-G4',stage:'C1',domain:'المعرفي',type:'موهبة',w:2,text:'يستخدم لعباً رمزياً مُعقداً بأدوار متعددة'},
+            {code:'COG-C1-G5',stage:'C1',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر تفكيراً استنتاجياً بسيطاً'},
+            {code:'LR-C1-01',stage:'C1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يتعلم مهارة جديدة من مشاهدة واحدة ويُطبِّقها في نفس الجلسة'},
+            {code:'LR-C1-02',stage:'C1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُظهر فضولاً عميقاً ومتواصلاً حول ظاهرة طبيعية يراها أول مرة'},
+            {code:'LR-C1-03',stage:'C1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُبدع استخداماً جديداً لأداة مألوفة لم يُعلَّمه'},
+            {code:'LR-C1-04',stage:'C1',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يسأل سلسلة أسئلة متتالية حول موضوع واحد حتى يستوعبه بعمق'},
+            {code:'LAN-C1-01',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يتكلم بجمل كاملة من 3–4 كلمات'},
+            {code:'LAN-C1-02',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُسمِّي معظم الأشياء في محيطه'},
+            {code:'LAN-C1-03',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم الضمائر بشكل صحيح نسبياً'},
+            {code:'LAN-C1-04',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يطرح أسئلة (لماذا؟ كيف؟ من؟)'},
+            {code:'LAN-C1-05',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم قصصاً قصيرة ويُجيب عنها'},
+            {code:'LAN-C1-06',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم الجمع وصيغ الزمن'},
+            {code:'LAN-C1-07',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُعبِّر عن مشاعره بكلمات'},
+            {code:'LAN-C1-08',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يحكي أحداثاً يومية بتسلسل'},
+            {code:'LAN-C1-09',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم تعليمات من 3 خطوات'},
+            {code:'LAN-C1-10',stage:'C1',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم مفردات تجاوز 200 كلمة'},
+            {code:'LAN-C1-G1',stage:'C1',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم جملاً مُركَّبة بروابط (لأن، عندما)'},
+            {code:'LAN-C1-G2',stage:'C1',domain:'اللغوي',type:'موهبة',w:2,text:'يحكي قصصاً من إبداعه بتسلسل'},
+            {code:'LAN-C1-G3',stage:'C1',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم مفردات تفوق 500 كلمة'},
+            {code:'LAN-C1-G4',stage:'C1',domain:'اللغوي',type:'موهبة',w:2,text:'يفهم النكات البسيطة والألعاب اللغوية'},
+            {code:'MOT-C1-01',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يركض بمهارة ويتوقف حسب الطلب'},
+            {code:'MOT-C1-02',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يقفز من مرتفع بسيط'},
+            {code:'MOT-C1-03',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يركل كرة بدقة'},
+            {code:'MOT-C1-04',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يرسم دائرة وخطوطاً بوضوح'},
+            {code:'MOT-C1-05',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يُقص بالمقص على خطوط مستقيمة'},
+            {code:'MOT-C1-06',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يُنجز أعمالاً فنية بسيطة (طي، لصق)'},
+            {code:'MOT-C1-07',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يتسلق باتزان'},
+            {code:'MOT-C1-08',stage:'C1',domain:'الحركي',type:'أساسي',w:1.5,text:'يستخدم ثلاثة أصابع للإمساك بالقلم'},
+            {code:'MOT-C1-G1',stage:'C1',domain:'الحركي',type:'موهبة',w:2,text:'يرسم صورة إنسان أو بيت بتفاصيل مبكرة'},
+            {code:'MOT-C1-G2',stage:'C1',domain:'الحركي',type:'موهبة',w:2,text:'يُؤدي تسلسلاً حركياً مُعقداً بدقة'},
+            {code:'SOC-C1-01',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يلعب مع الأطفال بشكل تعاوني'},
+            {code:'SOC-C1-02',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتبع قواعد اللعب البسيطة'},
+            {code:'SOC-C1-03',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُعبِّر عن مشاعره بكلمات واضحة'},
+            {code:'SOC-C1-04',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر تعاطفاً مع الآخرين'},
+            {code:'SOC-C1-05',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُفرِّق بين الصواب والخطأ'},
+            {code:'SOC-C1-06',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يقبل الانتظار والتأجيل أحياناً'},
+            {code:'SOC-C1-07',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُعبِّر عن تفضيلاته بوضوح'},
+            {code:'SOC-C1-08',stage:'C1',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر الاعتزاز بإنجازاته'},
+            {code:'SOC-C1-G1',stage:'C1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُبادر بتنظيم لعبة جماعية ويُوزِّع الأدوار'},
+            {code:'SOC-C1-G2',stage:'C1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُعبِّر عن مفاهيم أخلاقية مُعقَّدة (العدل، الأمانة)'},
+            {code:'SOC-C1-G3',stage:'C1',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يبحث عن صداقات مع أطفال أكبر أو بالغين'},
+            {code:'ADP-C1-01',stage:'C1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يأكل باستقلال تام بالشوكة أو الملعقة'},
+            {code:'ADP-C1-02',stage:'C1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يستخدم الحمام باستقلال'},
+            {code:'ADP-C1-03',stage:'C1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يغسل يديه بمفرده'},
+            {code:'ADP-C1-04',stage:'C1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في ارتداء الملابس بشكل شبه مستقل'},
+            {code:'ADP-C1-05',stage:'C1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُرتِّب ألعابه بتوجيه'},
+            {code:'ADP-C1-06',stage:'C1',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في المهام المنزلية البسيطة'},
+            {code:'ADP-C1-G1',stage:'C1',domain:'التكيفي',type:'موهبة',w:2,text:'يُنظِّم أغراضه الشخصية باستقلال وبترتيب لافت'},
+            {code:'ADP-C1-G2',stage:'C1',domain:'التكيفي',type:'موهبة',w:2,text:'يتكيف مع بيئات جديدة بمرونة استثنائية'},
+            {code:'MUS-C1-01',stage:'C1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُغنِّي أغانٍ كاملة بطلاقة'},
+            {code:'MUS-C1-02',stage:'C1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُقلِّد إيقاعاً بعد سماعه مرة واحدة'},
+            {code:'MUS-C1-03',stage:'C1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز بين الأدوات الموسيقية بأصواتها'},
+            {code:'MUS-C1-04',stage:'C1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُتقن الحركات الإيقاعية مع الأغاني'},
+            {code:'MUS-C1-05',stage:'C1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُصدر ألحاناً جديدة من إبداعه أثناء اللعب'},
+            {code:'MUS-C1-06',stage:'C1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يطلب الاستماع أو الغناء بمبادرة ذاتية'},
+            {code:'MUS-C1-07',stage:'C1',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يتذكر ألحان الأغاني بعد فترة انقطاع'},
+            {code:'MUS-C1-G1',stage:'C1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُؤلِّف أغنية بسيطة بكلمات وإيقاع من إبداعه'},
+            {code:'MUS-C1-G2',stage:'C1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُعيد إنتاج لحن سمعه مرة بدقة لافتة'},
+            {code:'MUS-C1-G3',stage:'C1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُميِّز الفارق بين نغمتين متقاربتين'},
+            {code:'MUS-C1-G4',stage:'C1',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُنتِج إيقاعاً منظماً ومتكرراً على أداة بسيطة'},
+            {code:'IRP-C1-01',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُسمِّي مشاعره بدقة أكبر (خايف، متحمس، متضايق)'},
+            {code:'IRP-C1-02',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُفرِّق بين الخوف الحقيقي والخوف التخيلي'},
+            {code:'IRP-C1-03',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُعبِّر عن سعادته أو حزنه بكلمات واضحة دون بكاء'},
+            {code:'IRP-C1-04',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يطلب وقتاً لنفسه عند الشعور بالإرهاق'},
+            {code:'IRP-C1-05',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُلاحظ تأثير مشاعره على سلوكه'},
+            {code:'IRP-C1-06',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُصرِّح بتفضيلاته وحدوده الشخصية'},
+            {code:'IRP-C1-G1',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُشخِّص سبب مشاعره بدقة ويُعبِّر عنه بجملة واضحة'},
+            {code:'IRP-C1-G2',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُنظِّم مشاعره باستراتيجية يختارها بنفسه'},
+            {code:'IRP-C1-G3',stage:'C1',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُعبِّر عن مشاعر معقدة متزامنة (فرحان وخايف في نفس الوقت)'},
+            {code:'COG-C2-01',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يَعدّ حتى 20 ويُمثِّل الأعداد'},
+            {code:'COG-C2-02',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُفرز بحسب صفتين أو أكثر'},
+            {code:'COG-C2-03',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يفهم الزمن (أيام الأسبوع، الأشهر)'},
+            {code:'COG-C2-04',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يحل لغزاً من 24–48 قطعة'},
+            {code:'COG-C2-05',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستخدم اللعب الرمزي المُركَّب'},
+            {code:'COG-C2-06',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتبع تعليمات من 3–4 خطوات'},
+            {code:'COG-C2-07',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُخطِّط لنشاط بسيط ويُنفِّذه'},
+            {code:'COG-C2-08',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر انتباهاً مستداماً لـ 15 دقيقة'},
+            {code:'COG-C2-09',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يفهم مفاهيم الكمية (نصف، كل، بعض)'},
+            {code:'COG-C2-10',stage:'C2',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتذكر تفاصيل قصة سمعها'},
+            {code:'COG-C2-G1',stage:'C2',domain:'المعرفي',type:'موهبة',w:2,text:'يُجري جمعاً وطرحاً ذهنياً حتى 10'},
+            {code:'COG-C2-G2',stage:'C2',domain:'المعرفي',type:'موهبة',w:2,text:'يحل لغزاً من 60 قطعة أو أكثر'},
+            {code:'COG-C2-G3',stage:'C2',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر تفكيراً تجريداً بسيطاً'},
+            {code:'COG-C2-G4',stage:'C2',domain:'المعرفي',type:'موهبة',w:2,text:'يُبدع أنماطاً وتسلسلات خاصة'},
+            {code:'COG-C2-G5',stage:'C2',domain:'المعرفي',type:'موهبة',w:2,text:'يُميِّز الحروف ويربطها بأصواتها'},
+            {code:'LR-C2-01',stage:'C2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يتعلم مفهوماً جديداً من شرح واحد ويُطبِّقه في سياق مختلف'},
+            {code:'LR-C2-02',stage:'C2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُظهر فضولاً عميقاً حول ظاهرة يراها لأول مرة'},
+            {code:'LR-C2-03',stage:'C2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُبدع حلاً لمشكلة لم يواجهها من قبل'},
+            {code:'LR-C2-04',stage:'C2',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يطرح أسئلة متتالية وعميقة حتى يصل إلى فهم يُرضيه'},
+            {code:'LAN-C2-01',stage:'C2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يتحدث بجمل كاملة واضحة'},
+            {code:'LAN-C2-02',stage:'C2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يحكي قصة ذات بداية ونهاية'},
+            {code:'LAN-C2-03',stage:'C2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم روابط (لأن، بعدما، عندما)'},
+            {code:'LAN-C2-04',stage:'C2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم مفردات مجردة بسيطة'},
+            {code:'LAN-C2-05',stage:'C2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُصف الأشياء بثلاث صفات أو أكثر'},
+            {code:'LAN-C2-06',stage:'C2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُجيب عن أسئلة مُركَّبة'},
+            {code:'LAN-C2-07',stage:'C2',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم الماضي والمضارع بدقة'},
+            {code:'LAN-C2-G1',stage:'C2',domain:'اللغوي',type:'موهبة',w:2,text:'يُؤلِّف قصة ذات شخصيات وأحداث'},
+            {code:'LAN-C2-G2',stage:'C2',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم مفردات تفوق 1000 كلمة'},
+            {code:'LAN-C2-G3',stage:'C2',domain:'اللغوي',type:'موهبة',w:2,text:'يفهم النكات والألعاب اللغوية المُركَّبة'},
+            {code:'LAN-C2-G4',stage:'C2',domain:'اللغوي',type:'موهبة',w:2,text:'يقرأ كلمات أولى بشكل مستقل'},
+            {code:'MOT-C2-01',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يقفز على قدم واحدة'},
+            {code:'MOT-C2-02',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يصعد ويهبط الدرج بقدم متناوبة'},
+            {code:'MOT-C2-03',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يمشي على خط مستقيم'},
+            {code:'MOT-C2-04',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يرسم أشكالاً هندسية بسيطة'},
+            {code:'MOT-C2-05',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يُقص على خط منحنٍ'},
+            {code:'MOT-C2-06',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يرمي الكرة بدقة أكبر'},
+            {code:'MOT-C2-07',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يستخدم القلم بإمساكة صحيحة'},
+            {code:'MOT-C2-08',stage:'C2',domain:'الحركي',type:'أساسي',w:1.5,text:'يُنجز أعمالاً يدوية أكثر دقة'},
+            {code:'MOT-C2-G1',stage:'C2',domain:'الحركي',type:'موهبة',w:2,text:'يكتب اسمه أو حروفاً بمبادرة ذاتية'},
+            {code:'MOT-C2-G2',stage:'C2',domain:'الحركي',type:'موهبة',w:2,text:'يُتقن مهارة رياضية أو فنية تفوق عمره'},
+            {code:'SOC-C2-01',stage:'C2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتعاون مع الأطفال في مشاريع مشتركة'},
+            {code:'SOC-C2-02',stage:'C2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يحل النزاعات بالكلام'},
+            {code:'SOC-C2-03',stage:'C2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتبع القواعد حتى بغياب الرقيب'},
+            {code:'SOC-C2-04',stage:'C2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر تعاطفاً حقيقياً'},
+            {code:'SOC-C2-05',stage:'C2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتحمل مسؤوليات بسيطة بالتزام'},
+            {code:'SOC-C2-06',stage:'C2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتفاعل مع أطفال من أعمار مختلفة'},
+            {code:'SOC-C2-07',stage:'C2',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُعبِّر عن مشاعره بكلمات دون انفجار'},
+            {code:'SOC-C2-G1',stage:'C2',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يقود مجموعة ويُنظِّم نشاطاً جماعياً'},
+            {code:'SOC-C2-G2',stage:'C2',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُناقش مفاهيم أخلاقية ووجودية بعمق'},
+            {code:'SOC-C2-G3',stage:'C2',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُظهر حساسية استثنائية للعدل والإنصاف'},
+            {code:'ADP-C2-01',stage:'C2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يرتدي ملابسه باستقلال تام'},
+            {code:'ADP-C2-02',stage:'C2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يغسل وجهه ويديه باستقلال'},
+            {code:'ADP-C2-03',stage:'C2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يستخدم الحمام باستقلال تام'},
+            {code:'ADP-C2-04',stage:'C2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُرتِّب ألعابه بمبادرة ذاتية'},
+            {code:'ADP-C2-05',stage:'C2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في مهام منزلية متعددة'},
+            {code:'ADP-C2-06',stage:'C2',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتبع روتيناً يومياً بمبادرة كاملة'},
+            {code:'ADP-C2-G1',stage:'C2',domain:'التكيفي',type:'موهبة',w:2,text:'يُنظِّم حقيبته أو أغراضه بدقة لافتة'},
+            {code:'ADP-C2-G2',stage:'C2',domain:'التكيفي',type:'موهبة',w:2,text:'يتكيف مع تغيير مفاجئ في الخطة بمرونة استثنائية'},
+            {code:'MUS-C2-01',stage:'C2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُغنِّي بنغمة صحيحة في معظم الأغاني المألوفة'},
+            {code:'MUS-C2-02',stage:'C2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُحرِّك جسمه بتوافق مع الإيقاع'},
+            {code:'MUS-C2-03',stage:'C2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز بين الأنغام العالية والمنخفضة'},
+            {code:'MUS-C2-04',stage:'C2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُنتِج إيقاعاً منتظماً على أداة بسيطة'},
+            {code:'MUS-C2-05',stage:'C2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يتذكر كلمات أغانٍ متعددة ويُغنِّيها كاملة'},
+            {code:'MUS-C2-06',stage:'C2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُفرِّق بين الموسيقى الحزينة والفرحة بالتعبير الوجهي'},
+            {code:'MUS-C2-07',stage:'C2',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُشارك في لعب إيقاعي جماعي بانتظام'},
+            {code:'MUS-C2-G1',stage:'C2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُؤلِّف أغنية ذات مقاطع متعددة بكلمات وإيقاع'},
+            {code:'MUS-C2-G2',stage:'C2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُعزف لحناً بسيطاً على أداة منزلية بدقة'},
+            {code:'MUS-C2-G3',stage:'C2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُعيد إنتاج لحن سمعه مرة بدقة عالية'},
+            {code:'MUS-C2-G4',stage:'C2',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُلاحظ الفارق بين نغمتين متقاربتين جداً'},
+            {code:'CRT-C2-01',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يرسم لوحات تعبيرية ذات عناصر متعددة'},
+            {code:'CRT-C2-02',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يبتكر ألعاباً جديدة بقواعد من وضعه'},
+            {code:'CRT-C2-03',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُؤلِّف قصصاً خيالية من إبداعه'},
+            {code:'CRT-C2-04',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُظهر شغفاً متخصصاً في موضوع واحد'},
+            {code:'CRT-C2-05',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُحلِّل مشكلة بطرق متعددة وإبداعية'},
+            {code:'CRT-C2-L1',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُنظِّم الأطفال الآخرين في لعبة ويُقسِّم الأدوار'},
+            {code:'CRT-C2-L2',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُقنع الآخرين بحجج واضحة'},
+            {code:'CRT-C2-L3',stage:'C2',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُظهر حساسية أخلاقية وشعوراً بالمسؤولية'},
+            {code:'IRP-C2-01',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُسمِّي طيفاً واسعاً من المشاعر بدقة'},
+            {code:'IRP-C2-02',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُربط بين حدث خارجي وشعوره الداخلي بوضوح'},
+            {code:'IRP-C2-03',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُنظِّم مشاعره باستراتيجية بمبادرة ذاتية'},
+            {code:'IRP-C2-04',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُفرِّق بين ما يشعر به وما يُبديه للآخرين'},
+            {code:'IRP-C2-05',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُحدِّد احتياجاته العاطفية ويطلبها بوضوح'},
+            {code:'IRP-C2-06',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُلاحظ تغيُّر مشاعره عبر الوقت'},
+            {code:'IRP-C2-G1',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُحلِّل سبب مشاعره بجمل متسلسلة منطقياً'},
+            {code:'IRP-C2-G2',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُظهر وعياً ذاتياً معرفياً (يعرف ما يُجيده وما يصعب عليه)'},
+            {code:'IRP-C2-G3',stage:'C2',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُعبِّر عن معاناته الداخلية بطرق رمزية (رسم، قصة، لعب)'},
+            {code:'COG-C3-01',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يَعدّ ويتعرف على الأعداد حتى 50'},
+            {code:'COG-C3-02',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يحل مشكلات رياضية بسيطة'},
+            {code:'COG-C3-03',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُركِّب أحجية من 48 قطعة أو أكثر'},
+            {code:'COG-C3-04',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يفهم مفاهيم الزمن المُركَّبة'},
+            {code:'COG-C3-05',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتبع تعليمات متعددة بدقة'},
+            {code:'COG-C3-06',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُميِّز الحروف ويربطها بأصواتها'},
+            {code:'COG-C3-07',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستخدم التفكير السببي المتقدم'},
+            {code:'COG-C3-08',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُخطِّط لمشروع ويُنفِّذه'},
+            {code:'COG-C3-09',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُظهر انتباهاً مستداماً لـ 20 دقيقة'},
+            {code:'COG-C3-10',stage:'C3',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتذكر تفاصيل دقيقة من أحداث ماضية'},
+            {code:'COG-C3-G1',stage:'C3',domain:'المعرفي',type:'موهبة',w:2,text:'يقرأ جملاً بسيطة بفهم'},
+            {code:'COG-C3-G2',stage:'C3',domain:'المعرفي',type:'موهبة',w:2,text:'يُجري عمليات حسابية بسيطة ذهنياً'},
+            {code:'COG-C3-G3',stage:'C3',domain:'المعرفي',type:'موهبة',w:2,text:'يُحلِّل مشكلة مُعقَّدة بخطوات منهجية'},
+            {code:'COG-C3-G4',stage:'C3',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر تفكيراً مجرداً مبكراً'},
+            {code:'COG-C3-G5',stage:'C3',domain:'المعرفي',type:'موهبة',w:2,text:'يُركِّب أحجية من 100 قطعة أو أكثر باستراتيجية'},
+            {code:'LR-C3-01',stage:'C3',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يتعلم مهارة أو مفهوماً جديداً من تجربة واحدة ويُعمِّمه'},
+            {code:'LR-C3-02',stage:'C3',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُظهر شغفاً عميقاً بموضوع يكتشفه لأول مرة'},
+            {code:'LR-C3-03',stage:'C3',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُبدع حلولاً متعددة لمشكلة واحدة دون توجيه'},
+            {code:'LR-C3-04',stage:'C3',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يطرح أسئلة استكشافية عميقة تتجاوز ما قيل له'},
+            {code:'LAN-C3-01',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يتحدث بطلاقة كاملة وجمل مُركَّبة'},
+            {code:'LAN-C3-02',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يحكي قصصاً طويلة بتسلسل وتفاصيل'},
+            {code:'LAN-C3-03',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم مفردات ثرية ومتنوعة'},
+            {code:'LAN-C3-04',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم ويُجيب عن أسئلة مُركَّبة'},
+            {code:'LAN-C3-05',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُعبِّر عن رأيه ويُقدِّم حججاً'},
+            {code:'LAN-C3-06',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم التعليمات اللفظية المعقدة'},
+            {code:'LAN-C3-07',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُشارك في حوار مُطوَّل'},
+            {code:'LAN-C3-08',stage:'C3',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم الاستعارة والكناية البسيطة'},
+            {code:'LAN-C3-G1',stage:'C3',domain:'اللغوي',type:'موهبة',w:2,text:'يقرأ فقرات قصيرة بفهم'},
+            {code:'LAN-C3-G2',stage:'C3',domain:'اللغوي',type:'موهبة',w:2,text:'يُؤلِّف قصة مكتوبة أو مُملاة بنية سردية متكاملة'},
+            {code:'LAN-C3-G3',stage:'C3',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم مفردات تفوق مستوى عمره بكثير'},
+            {code:'LAN-C3-G4',stage:'C3',domain:'اللغوي',type:'موهبة',w:2,text:'يُجادل بحجج منطقية متسلسلة'},
+            {code:'MOT-C3-01',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يقفز على قدم واحدة لعشر مرات'},
+            {code:'MOT-C3-02',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يمشي على خط مستقيم دقيق'},
+            {code:'MOT-C3-03',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يرسم أشكالاً هندسية متعددة بدقة'},
+            {code:'MOT-C3-04',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يكتب بعض الحروف والأرقام'},
+            {code:'MOT-C3-05',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يُقص على خط منحنٍ بدقة'},
+            {code:'MOT-C3-06',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يرمي الكرة ويلتقطها من مسافة'},
+            {code:'MOT-C3-07',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يُنجز مهام يدوية دقيقة'},
+            {code:'MOT-C3-08',stage:'C3',domain:'الحركي',type:'أساسي',w:1.5,text:'يُنسِّق بين الحركات المعقدة باتزان'},
+            {code:'MOT-C3-G1',stage:'C3',domain:'الحركي',type:'موهبة',w:2,text:'يُتقن مهارة حركية رياضية بعد مشاهدتها'},
+            {code:'MOT-C3-G2',stage:'C3',domain:'الحركي',type:'موهبة',w:2,text:'يرسم لوحة تفصيلية ذات عناصر متعددة'},
+            {code:'SOC-C3-01',stage:'C3',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتعاون في مشاريع جماعية مُعقَّدة'},
+            {code:'SOC-C3-02',stage:'C3',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يحترم القواعد حتى بغياب الرقيب'},
+            {code:'SOC-C3-03',stage:'C3',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يحل النزاعات بالكلام والتفاوض'},
+            {code:'SOC-C3-04',stage:'C3',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر تعاطفاً ونضجاً عاطفياً واضحين'},
+            {code:'SOC-C3-05',stage:'C3',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتحمل مسؤوليات بالتزام مستمر'},
+            {code:'SOC-C3-06',stage:'C3',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتفاعل بثقة مع الكبار والأقران'},
+            {code:'SOC-C3-07',stage:'C3',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يفهم وجهات نظر مختلفة في موقف'},
+            {code:'SOC-C3-G1',stage:'C3',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُبادر بالقيادة ويُنظِّم المجموعة بفاعلية'},
+            {code:'SOC-C3-G2',stage:'C3',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُناقش مفاهيم أخلاقية ووجودية بعمق'},
+            {code:'SOC-C3-G3',stage:'C3',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُفضِّل صداقات مع أطفال أكبر أو بالغين'},
+            {code:'ADP-C3-01',stage:'C3',domain:'التكيفي',type:'أساسي',w:1.5,text:'يلبس نفسه كاملاً باستقلال'},
+            {code:'ADP-C3-02',stage:'C3',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُنظِّم أسنانه ويغسل وجهه'},
+            {code:'ADP-C3-03',stage:'C3',domain:'التكيفي',type:'أساسي',w:1.5,text:'يستخدم الحمام باستقلال تام'},
+            {code:'ADP-C3-04',stage:'C3',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُنظِّم أغراضه الشخصية'},
+            {code:'ADP-C3-05',stage:'C3',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في مهام منزلية متعددة'},
+            {code:'ADP-C3-06',stage:'C3',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتبع روتيناً يومياً بمبادرة ذاتية'},
+            {code:'ADP-C3-07',stage:'C3',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتكيف مع بيئات جديدة بمرونة'},
+            {code:'ADP-C3-G1',stage:'C3',domain:'التكيفي',type:'موهبة',w:2,text:'يُدير وقته وينتقل بين الأنشطة باستقلال تام'},
+            {code:'ADP-C3-G2',stage:'C3',domain:'التكيفي',type:'موهبة',w:2,text:'يُعيد ترتيب بيئته بنظام لافت ومبادرة ذاتية'},
+            {code:'MUS-C3-01',stage:'C3',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُغنِّي بنغمة صحيحة ثابتة في الأغاني الطويلة'},
+            {code:'MUS-C3-02',stage:'C3',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يتبع إيقاعاً موسيقياً بدقة بالتصفيق أو الحركة'},
+            {code:'MUS-C3-03',stage:'C3',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز بين الأنماط الموسيقية المختلفة'},
+            {code:'MUS-C3-04',stage:'C3',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُعزف لحناً بسيطاً بدقة على أداة متاحة'},
+            {code:'MUS-C3-05',stage:'C3',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يستمع للموسيقى بتركيز عميق ويُعبِّر عن مشاعره'},
+            {code:'MUS-C3-06',stage:'C3',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز أنواع الموسيقى ويُفضِّل نوعاً معيناً'},
+            {code:'MUS-C3-07',stage:'C3',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُنظِّم لعباً إيقاعياً جماعياً'},
+            {code:'MUS-C3-G1',stage:'C3',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُؤلِّف أغنية ذات بنية موسيقية واضحة'},
+            {code:'MUS-C3-G2',stage:'C3',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُتقن عزف لحن كامل بدقة وانتظام'},
+            {code:'MUS-C3-G3',stage:'C3',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُحلِّل التركيب الإيقاعي لأغنية ويصفه شفهياً'},
+            {code:'MUS-C3-G4',stage:'C3',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُميِّز الأنغام المتنافرة من المتناسقة تلقائياً'},
+            {code:'MUS-C3-G5',stage:'C3',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُنتِج أداءً موسيقياً متكاملاً (غناء + إيقاع + حركة)'},
+            {code:'CRT-C3-01',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يرسم لوحات تفصيلية تعبيرية'},
+            {code:'CRT-C3-02',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يبتكر ألعاباً بقواعد مُعقَّدة'},
+            {code:'CRT-C3-03',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُؤلِّف قصصاً طويلة ذات بنية سردية'},
+            {code:'CRT-C3-04',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُظهر شغفاً متخصصاً عميقاً'},
+            {code:'CRT-C3-05',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُبدع حلولاً متعددة لمشكلة واحدة'},
+            {code:'CRT-C3-06',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُنشئ أنماطاً وتسلسلات معقدة'},
+            {code:'CRT-C3-L1',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُنظِّم الأطفال ويُقسِّم الأدوار بفاعلية'},
+            {code:'CRT-C3-L2',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُقنع بالحجج ويُفسِّر قراراته بوضوح'},
+            {code:'CRT-C3-L3',stage:'C3',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُظهر حساسية أخلاقية ومسؤولية تجاه المجموعة'},
+            {code:'IRP-C3-01',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُسمِّي مشاعره بدقة في سياقات متنوعة'},
+            {code:'IRP-C3-02',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُميِّز بين المشاعر الأولية والمُركَّبة'},
+            {code:'IRP-C3-03',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُنظِّم مشاعره بطريقة مناسبة للسياق'},
+            {code:'IRP-C3-04',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُعبِّر عن رأيه الداخلي باحترام'},
+            {code:'IRP-C3-05',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُحدِّد نقاط قوته وضعفه بوضوح'},
+            {code:'IRP-C3-06',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يطلب المساعدة عند الحاجة بوضوح'},
+            {code:'IRP-C3-07',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُلاحظ دوافعه الداخلية ويُعبِّر عنها'},
+            {code:'IRP-C3-08',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُميِّز بين قيمه الشخصية وقيم الآخرين'},
+            {code:'IRP-C3-G1',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُحلِّل تجربة عاطفية ماضية ويستخلص درساً'},
+            {code:'IRP-C3-G2',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُعبِّر عن هويته الشخصية وما يُميِّزه'},
+            {code:'IRP-C3-G3',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُدير صراعاً داخلياً معقداً بوعي'},
+            {code:'IRP-C3-G4',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُربط مشاعره بقيمه في سياقات متعددة'},
+            {code:'IRP-C3-G5',stage:'C3',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُظهر وعياً ذاتياً معرفياً (يعرف كيف يتعلم)'},
+            {code:'COG-C4-01',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يَعدّ حتى 100 وظيفياً ويتعرف على الأعداد'},
+            {code:'COG-C4-02',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يفهم مفهوم الأعداد الزوجية والفردية'},
+            {code:'COG-C4-03',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُجري جمعاً وطرحاً بسيطاً في ذهنه'},
+            {code:'COG-C4-04',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُركِّب أحجية من 60 قطعة أو أكثر'},
+            {code:'COG-C4-05',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يفهم مفاهيم الزمن (أيام الأسبوع، الأشهر، الفصول)'},
+            {code:'COG-C4-06',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتبع تعليمات متعددة ومتسلسلة من أربع خطوات'},
+            {code:'COG-C4-07',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يحل مشكلات تتطلب تفكيراً من خطوتين أو ثلاث'},
+            {code:'COG-C4-08',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُصنِّف المعلومات ويُنظِّمها في مجموعات منطقية'},
+            {code:'COG-C4-09',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يستخدم التفكير الاستنتاجي (إذا كان كذا، فإن كذا)'},
+            {code:'COG-C4-10',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يتذكر تفاصيل دقيقة من قصص أو أحداث'},
+            {code:'COG-C4-11',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُميِّز الحروف ويربط بعضها بأصواتها'},
+            {code:'COG-C4-12',stage:'C4',domain:'المعرفي',type:'أساسي',w:1.5,text:'يُخطِّط لنشاط مُركَّب ويتبع الخطة بمرونة'},
+            {code:'COG-C4-G1',stage:'C4',domain:'المعرفي',type:'موهبة',w:2,text:'يقرأ جملاً قصيرة بفهم واضح'},
+            {code:'COG-C4-G2',stage:'C4',domain:'المعرفي',type:'موهبة',w:2,text:'يُجري جمعاً وطرحاً حتى 20 ذهنياً'},
+            {code:'COG-C4-G3',stage:'C4',domain:'المعرفي',type:'موهبة',w:2,text:'يفهم مفاهيم الضرب البسيط بالأشياء'},
+            {code:'COG-C4-G4',stage:'C4',domain:'المعرفي',type:'موهبة',w:2,text:'يُحلِّل مشكلة مُعقَّدة ويُقترح حلولاً متعددة'},
+            {code:'COG-C4-G5',stage:'C4',domain:'المعرفي',type:'موهبة',w:2,text:'يُظهر تفكيراً تجريدياً (يفهم المجاز والاستعارة)'},
+            {code:'COG-C4-G6',stage:'C4',domain:'المعرفي',type:'موهبة',w:2,text:'يُصمِّم تجربة بسيطة لاختبار فرضية من عنده'},
+            {code:'COG-C4-G7',stage:'C4',domain:'المعرفي',type:'موهبة',w:2,text:'يُركِّب أحجية من 100 قطعة أو أكثر باستراتيجية'},
+            {code:'LR-C4-01',stage:'C4',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يتعلم مفهوماً جديداً من شرح واحد ويُطبِّقه على سياق مختلف فوراً'},
+            {code:'LR-C4-02',stage:'C4',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُظهر شغفاً عميقاً بظاهرة يكتشفها لأول مرة'},
+            {code:'LR-C4-03',stage:'C4',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يُبدع حلولاً متعددة لمشكلة واحدة دون توجيه'},
+            {code:'LR-C4-04',stage:'C4',domain:'سرعة التعلم (ضمن المعرفي)',type:'أساسي',w:1.5,text:'يطرح أسئلة استكشافية تتجاوز ما قيل له'},
+            {code:'LAN-C4-01',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يتحدث بجمل كاملة وطليقة ومفهومة تماماً'},
+            {code:'LAN-C4-02',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يحكي قصة ذات أحداث متسلسلة وشخصيات'},
+            {code:'LAN-C4-03',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم جملاً مُركَّبة بروابط متنوعة'},
+            {code:'LAN-C4-04',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم ويُجيب على أسئلة مُركَّبة'},
+            {code:'LAN-C4-05',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يصف الأحداث بالترتيب الزمني بدقة'},
+            {code:'LAN-C4-06',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يستخدم مفردات واسعة وثرية مناسبة للسياق'},
+            {code:'LAN-C4-07',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُميِّز الأصوات اللغوية الدقيقة والقافية'},
+            {code:'LAN-C4-08',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُشارك في حوار مُطوَّل ويحافظ على موضوعه'},
+            {code:'LAN-C4-09',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُعبِّر عن رأيه بحجة ويُقنع الآخرين'},
+            {code:'LAN-C4-10',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يفهم التعليمات اللفظية المعقدة ويُطبِّقها'},
+            {code:'LAN-C4-11',stage:'C4',domain:'اللغوي',type:'أساسي',w:1.5,text:'يُفرِّق بين الحقيقة والرأي في الكلام'},
+            {code:'LAN-C4-G1',stage:'C4',domain:'اللغوي',type:'موهبة',w:2,text:'يقرأ فقرات قصيرة بفهم كامل'},
+            {code:'LAN-C4-G2',stage:'C4',domain:'اللغوي',type:'موهبة',w:2,text:'يُؤلِّف قصة مكتوبة أو مُملاة ذات بنية سردية متكاملة'},
+            {code:'LAN-C4-G3',stage:'C4',domain:'اللغوي',type:'موهبة',w:2,text:'يستخدم مفردات من مستوى أعلى بكثير من عمره'},
+            {code:'LAN-C4-G4',stage:'C4',domain:'اللغوي',type:'موهبة',w:2,text:'يُجادل بحجج منطقية متسلسلة ومقنعة'},
+            {code:'LAN-C4-G5',stage:'C4',domain:'اللغوي',type:'موهبة',w:2,text:'يفهم المجاز والكناية ويستخدمهما في حديثه'},
+            {code:'MOT-C4-01',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يقفز لمسافة واسعة بكلتا القدمين'},
+            {code:'MOT-C4-02',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يقف على قدم واحدة لعشر ثوانٍ أو أكثر'},
+            {code:'MOT-C4-03',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يمشي على خط مستقيم إلى الأمام والخلف'},
+            {code:'MOT-C4-04',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يرسم أشكالاً هندسية متعددة بدقة'},
+            {code:'MOT-C4-05',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يكتب اسمه كاملاً وحروفاً وأرقاماً بوضوح'},
+            {code:'MOT-C4-06',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يستخدم المقص لقص على خط منحنٍ'},
+            {code:'MOT-C4-07',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يرمي الكرة ويلتقطها بدقة من مسافة'},
+            {code:'MOT-C4-08',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يُنسِّق بين الحركات المعقدة باتزان'},
+            {code:'MOT-C4-09',stage:'C4',domain:'الحركي',type:'أساسي',w:1.5,text:'يُنجز مهام حركية دقيقة (خياطة، بناء نماذج)'},
+            {code:'MOT-C4-G1',stage:'C4',domain:'الحركي',type:'موهبة',w:2,text:'يُتقن مهارة حركية رياضية بعد مشاهدتها مرتين'},
+            {code:'MOT-C4-G2',stage:'C4',domain:'الحركي',type:'موهبة',w:2,text:'يرسم لوحة تفصيلية ذات عناصر متعددة وتناسب'},
+            {code:'MOT-C4-G3',stage:'C4',domain:'الحركي',type:'موهبة',w:2,text:'يُنجز مهارة حركية دقيقة تفوق مستوى عمره'},
+            {code:'SOC-C4-01',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتعاون مع الآخرين في مشاريع مُركَّبة'},
+            {code:'SOC-C4-02',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يحترم القواعد ويُطبِّقها حتى بغياب الرقيب'},
+            {code:'SOC-C4-03',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يحل النزاعات بالكلام والتفاوض والتوسط'},
+            {code:'SOC-C4-04',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يُظهر تعاطفاً ونضجاً عاطفياً واضحين'},
+            {code:'SOC-C4-05',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يعمل ضمن فريق لتحقيق هدف مُركَّب'},
+            {code:'SOC-C4-06',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتحمل مسؤوليات بالتزام مستمر'},
+            {code:'SOC-C4-07',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يتفاعل بثقة مع الكبار والأقران في سياقات جديدة'},
+            {code:'SOC-C4-08',stage:'C4',domain:'الاجتماعي والعاطفي',type:'أساسي',w:1.5,text:'يفهم وجهات نظر مختلفة في موقف واحد'},
+            {code:'SOC-C4-G1',stage:'C4',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُبادر بالقيادة ويُنظِّم المجموعة بفاعلية'},
+            {code:'SOC-C4-G2',stage:'C4',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُناقش مفاهيم أخلاقية ووجودية بعمق وتسلسل'},
+            {code:'SOC-C4-G3',stage:'C4',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُفضِّل بناء علاقات مع أطفال أكبر أو بالغين'},
+            {code:'SOC-C4-G4',stage:'C4',domain:'الاجتماعي والعاطفي',type:'موهبة',w:2,text:'يُظهر حساسية استثنائية تجاه الظلم وألم الآخرين'},
+            {code:'ADP-C4-01',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يلبس نفسه كاملاً باستقلال تام'},
+            {code:'ADP-C4-02',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُنظِّم أسنانه ويغسل وجهه باستقلال'},
+            {code:'ADP-C4-03',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يستخدم الحمام باستقلال تام في أي بيئة'},
+            {code:'ADP-C4-04',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُنظِّم أغراضه الشخصية وحقيبته'},
+            {code:'ADP-C4-05',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يُساعد في مهام منزلية متعددة بكفاءة'},
+            {code:'ADP-C4-06',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتبع روتيناً ثابتاً بمبادرة ذاتية كاملة'},
+            {code:'ADP-C4-07',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتكيف مع بيئات جديدة ومواقف غير مألوفة'},
+            {code:'ADP-C4-08',stage:'C4',domain:'التكيفي',type:'أساسي',w:1.5,text:'يتعامل مع تغييرات الخطة بمرونة ودون ضيق شديد'},
+            {code:'ADP-C4-G1',stage:'C4',domain:'التكيفي',type:'موهبة',w:2,text:'يُدير وقته وينتقل بين الأنشطة باستقلال تام'},
+            {code:'ADP-C4-G2',stage:'C4',domain:'التكيفي',type:'موهبة',w:2,text:'يُعيد ترتيب بيئته بنظام لافت ومبادرة ذاتية'},
+            {code:'CRT-C4-01',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يرسم لوحات تفصيلية تعبيرية ذات عناصر متعددة'},
+            {code:'CRT-C4-02',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُؤلِّف أغانٍ أو ألحاناً متكاملة من إبداعه'},
+            {code:'CRT-C4-03',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُؤلِّف قصصاً خيالية طويلة ذات بنية سردية'},
+            {code:'CRT-C4-04',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يبتكر ألعاباً جديدة بقواعد من وضعه'},
+            {code:'CRT-C4-05',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُظهر شغفاً متخصصاً عميقاً في موضوع واحد'},
+            {code:'CRT-C4-06',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُحلِّل مشكلة بطرق متعددة وإبداعية'},
+            {code:'CRT-C4-L1',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُنظِّم الأطفال الآخرين ويُقسِّم الأدوار بفاعلية'},
+            {code:'CRT-C4-L2',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُقنع بالحجج ويُفسِّر قراراته بوضوح'},
+            {code:'CRT-C4-L3',stage:'C4',domain:'الإبداع والقيادة',type:'موهبة',w:2,text:'يُظهر حساسية أخلاقية ومسؤولية تجاه المجموعة'},
+            {code:'MUS-C4-01',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُغنِّي بنغمة صحيحة ثابتة في الأغاني الطويلة'},
+            {code:'MUS-C4-02',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يتبع إيقاعاً موسيقياً بدقة بالتصفيق أو الحركة'},
+            {code:'MUS-C4-03',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُميِّز بين الأنماط الموسيقية المختلفة'},
+            {code:'MUS-C4-04',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُعزف لحناً كاملاً على أداة متاحة بدقة'},
+            {code:'MUS-C4-05',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يستمع للموسيقى بتركيز عميق ويُعبِّر عن مشاعره'},
+            {code:'MUS-C4-06',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُفرِّق بين الأنواع الموسيقية المختلفة ويُسمِّيها'},
+            {code:'MUS-C4-07',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يُنظِّم لعباً إيقاعياً جماعياً ويُوزِّع الأدوار'},
+            {code:'MUS-C4-08',stage:'C4',domain:'الإيقاعي الموسيقي',type:'أساسي',w:1.5,text:'يتذكر ألحاناً كاملة ويُعيد إنتاجها بعد انقطاع'},
+            {code:'MUS-C4-G1',stage:'C4',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُؤلِّف أغنية ذات بنية موسيقية متكاملة'},
+            {code:'MUS-C4-G2',stage:'C4',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُتقن عزف لحن كامل بدقة وانتظام'},
+            {code:'MUS-C4-G3',stage:'C4',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُحلِّل التركيب الإيقاعي لأغنية ويصفه شفهياً'},
+            {code:'MUS-C4-G4',stage:'C4',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُميِّز الأنغام المتنافرة من المتناسقة بردة فعل فورية'},
+            {code:'MUS-C4-G5',stage:'C4',domain:'الإيقاعي الموسيقي',type:'موهبة',w:2,text:'يُنتِج أداءً موسيقياً متكاملاً (غناء + إيقاع + حركة)'},
+            {code:'IRP-C4-01',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُسمِّي مشاعره بدقة كبيرة في سياقات متنوعة'},
+            {code:'IRP-C4-02',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُميِّز بين المشاعر الأولية والمُركَّبة في تجاربه'},
+            {code:'IRP-C4-03',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُنظِّم مشاعره بطريقة مناسبة للسياق الاجتماعي'},
+            {code:'IRP-C4-04',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُعبِّر عن رأيه الداخلي باحترام حتى مع الاختلاف'},
+            {code:'IRP-C4-05',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُحدِّد نقاط قوته وضعفه بوضوح ودون إفراط في النقد'},
+            {code:'IRP-C4-06',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يطلب المساعدة عند الحاجة بوضوح ودون حرج'},
+            {code:'IRP-C4-07',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُلاحظ دوافعه الداخلية ويُعبِّر عنها بوضوح'},
+            {code:'IRP-C4-08',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يتعامل مع الإخفاق بمرونة دون انهيار عاطفي مفرط'},
+            {code:'IRP-C4-09',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'أساسي',w:1.5,text:'يُعبِّر عن طموحاته وتصوره لنفسه مستقبلاً'},
+            {code:'IRP-C4-G1',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُحلِّل تجربة عاطفية ماضية ويستخلص منها درساً'},
+            {code:'IRP-C4-G2',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُعبِّر عن هويته الشخصية وما يُميِّزه بوضوح'},
+            {code:'IRP-C4-G3',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُدير صراعاً داخلياً معقداً (أريد لكن لا ينبغي) بوعي'},
+            {code:'IRP-C4-G4',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُربط مشاعره بقيمه في سياقات متعددة'},
+            {code:'IRP-C4-G5',stage:'C4',domain:'الإدراك الذاتي الانفعالي',type:'موهبة',w:2,text:'يُظهر وعياً ذاتياً معرفياً (يعرف كيف يتعلم)'},
+        ];
+
+const STAGE_LABELS = {A1:'A1 — 0 إلى 6 أشهر',A2:'A2 — 6 إلى 12 شهراً',B1:'B1 — 12 إلى 18 شهراً',B2:'B2 — 18 إلى 24 شهراً',C1:'C1 — 24 إلى 36 شهراً',C2:'C2 — 36 إلى 48 شهراً',C3:'C3 — 48 إلى 60 شهراً',C4:'C4 — 60 إلى 72 شهراً'};
+function domainKey(d){ return d === 'سرعة التعلم (ضمن المعرفي)' ? 'المعرفي' : d; }
+function stageDomains(stage){
+  const set = [];
+  ITEMS.filter(it=>it.stage===stage).forEach(it=>{ const k=domainKey(it.domain); if(!set.includes(k)) set.push(k); });
+  // ترتيب ثابت مرغوب
+  const order = ['المعرفي','اللغوي','الحركي','الاجتماعي والعاطفي','التكيفي','الإدراك الذاتي الانفعالي','الإبداع والقيادة','الإيقاعي الموسيقي'];
+  return order.filter(d=>set.includes(d));
+}
+function itemsForDomainTab(stage, domainTab){
+  return ITEMS.filter(it => it.stage===stage && domainKey(it.domain)===domainTab);
+}
+
+// ================== التخزين السحابي المجهول (Firestore) ==================
+const firebaseConfig = { apiKey:"ضعي_مفتاحك_هنا", authDomain:"ضعي_مشروعك_هنا.firebaseapp.com", projectId:"ضعي_معرف_مشروعك_هنا" };
+let db = null;
+try { if (firebaseConfig.apiKey !== "ضعي_مفتاحك_هنا") { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); } } catch(e){ console.warn('Firestore غير مُفعَّل بعد:', e.message); }
+function generateChildCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code='NM-'; for(let i=0;i<5;i++) code+=c[Math.floor(Math.random()*c.length)]; return code; }
+let saveTimer=null;
+function saveProgress(){
+  if(!db || !appState.childCode) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    db.collection('growth_responses').doc(appState.childCode).set({
+      stage: appState.stage, answers: appState.answers,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge:true}).catch(err=>console.warn('تعذّر الحفظ السحابي:', err.message));
+  }, 600);
+}
+function toggleResumeBox(){ document.getElementById('resume-box').classList.toggle('hidden'); }
+async function resumeByCode(){
+  const code = document.getElementById('resume-code').value.trim().toUpperCase();
+  const msg = document.getElementById('resume-msg');
+  if(!code) return;
+  if(!db){ msg.textContent='الحفظ السحابي غير مُفعَّل في هذه النسخة بعد.'; msg.className='text-xs mt-1 text-red-600'; return; }
+  try{
+    const snap = await db.collection('growth_responses').doc(code).get();
+    if(!snap.exists){ msg.textContent='لم يُعثر على رمز بهذا الشكل.'; msg.className='text-xs mt-1 text-red-600'; return; }
+    const data = snap.data();
+    appState.childCode = code; appState.stage = data.stage; appState.answers = data.answers || {}; appState.currentDomain = null;
+    document.getElementById('step-welcome').classList.add('hidden');
+    document.getElementById('step-assessment').classList.remove('hidden');
+    showCodeBadge();
+    renderAssessment();
+  }catch(err){ msg.textContent='خطأ: '+err.message; msg.className='text-xs mt-1 text-red-600'; }
+}
+function showCodeBadge(){ const el=document.getElementById('code-badge'); if(appState.childCode){ el.textContent='🔑 '+appState.childCode; el.classList.remove('hidden'); } }
+
+// ================== حالة التطبيق ==================
+let appState = { childCode:null, stage:'A1', answers:{}, currentDomain:null, focusedIndex:0 };
+
+function showKidInfo(){ document.getElementById('step-welcome').classList.add('hidden'); document.getElementById('step-kidinfo').classList.remove('hidden'); }
+function resetToHome(){
+  document.getElementById('step-assessment').classList.add('hidden');
+  document.getElementById('step-results').classList.add('hidden');
+  document.getElementById('step-kidinfo').classList.add('hidden');
+  document.getElementById('step-welcome').classList.remove('hidden');
+  document.getElementById('code-badge').classList.add('hidden');
+  appState = { childCode:null, stage:'A1', answers:{}, currentDomain:null, focusedIndex:0 };
+}
+function getStageFromDate(dob){ if(!dob) return null; const m=(new Date()-new Date(dob))/(1000*60*60*24*30.44); if(m<=6)return'A1'; if(m<=12)return'A2'; if(m<=18)return'B1'; if(m<=24)return'B2'; if(m<=36)return'C1'; if(m<=48)return'C2'; if(m<=60)return'C3'; return'C4'; }
+
+function startAssessment(){
+  const dob = document.getElementById('kid-dob').value;
+  const manual = document.getElementById('manual-stage').value;
+  const stage = dob ? getStageFromDate(dob) : manual;
+  appState.stage = stage; appState.answers = {}; appState.childCode = generateChildCode();
+  document.getElementById('step-kidinfo').classList.add('hidden');
+  document.getElementById('step-assessment').classList.remove('hidden');
+  showCodeBadge();
+  saveProgress();
+  renderAssessment();
+}
+
+function renderAssessment(){
+  const domains = stageDomains(appState.stage);
+  if(!appState.currentDomain || !domains.includes(appState.currentDomain)) appState.currentDomain = domains[0];
+  document.getElementById('stage-title').textContent = STAGE_LABELS[appState.stage];
+  renderTabs(domains);
+  renderItems();
+  updateProgress();
+}
+function renderTabs(domains){
+  const c = document.getElementById('domain-tabs'); c.innerHTML='';
+  const stageItems = ITEMS.filter(it=>it.stage===appState.stage);
+  domains.forEach(d=>{
+    const domItems = stageItems.filter(it=>domainKey(it.domain)===d);
+    const answeredCount = domItems.filter(it=>appState.answers[it.code]!==undefined).length;
+    const btn = document.createElement('button');
+    btn.className = 'domain-tab' + (d===appState.currentDomain?' active':'') + (answeredCount===domItems.length?' complete':'');
+    btn.textContent = `${d} (${domItems.length})`;
+    btn.onclick = ()=>{ appState.currentDomain=d; appState.focusedIndex=0; renderAssessment(); };
+    c.appendChild(btn);
+  });
+}
+function renderItems(){
+  const items = itemsForDomainTab(appState.stage, appState.currentDomain);
+  const container = document.getElementById('items-container');
+  container.innerHTML='';
+  items.forEach((it, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'item-row flex items-center justify-between gap-3' + (idx===appState.focusedIndex?' focused':'') + (appState.answers[it.code]!==undefined?' answered':'');
+    row.dataset.idx = idx;
+    const label = document.createElement('span');
+    label.className='text-sm text-gray-700 flex-1';
+    label.textContent = it.text + (it.domain.includes('سرعة التعلم') ? ' ⚡' : '') + (it.type==='موهبة' ? ' 🌟' : '');
+    row.appendChild(label);
+    const btnWrap = document.createElement('div'); btnWrap.className='flex gap-1.5 flex-shrink-0';
+    [0,1,2,3].forEach(v=>{
+      const b = document.createElement('button');
+      b.className = 'score-btn' + (appState.answers[it.code]===v?(' active-'+v):'');
+      b.textContent = '٠١٢٣'[v];
+      b.onclick = ()=>{ appState.answers[it.code]=v; appState.focusedIndex=Math.min(idx+1, items.length-1); renderItems(); renderTabs(stageDomains(appState.stage)); updateProgress(); saveProgress(); };
+      btnWrap.appendChild(b);
+    });
+    row.appendChild(btnWrap);
+    row.onclick = (e)=>{ if(e.target.tagName!=='BUTTON'){ appState.focusedIndex=idx; renderItems(); } };
+    container.appendChild(row);
+  });
+}
+function updateProgress(){
+  const total = ITEMS.filter(it=>it.stage===appState.stage).length;
+  const answered = ITEMS.filter(it=>it.stage===appState.stage && appState.answers[it.code]!==undefined).length;
+  document.getElementById('progress-text').textContent = `${answered} / ${total} بنداً`;
+  document.getElementById('progress-bar').style.width = (answered/total*100)+'%';
+}
+document.addEventListener('keydown', (e)=>{
+  const assessVisible = !document.getElementById('step-assessment').classList.contains('hidden');
+  if(!assessVisible) return;
+  const items = itemsForDomainTab(appState.stage, appState.currentDomain);
+  if(['0','1','2','3'].includes(e.key)){
+    const v = parseInt(e.key);
+    const it = items[appState.focusedIndex];
+    if(it){ appState.answers[it.code]=v; appState.focusedIndex=Math.min(appState.focusedIndex+1, items.length-1); renderItems(); renderTabs(stageDomains(appState.stage)); updateProgress(); saveProgress(); }
+  } else if(e.key==='ArrowDown'){ appState.focusedIndex=Math.min(appState.focusedIndex+1, items.length-1); renderItems(); e.preventDefault(); }
+  else if(e.key==='ArrowUp'){ appState.focusedIndex=Math.max(appState.focusedIndex-1, 0); renderItems(); e.preventDefault(); }
+});
+
+// ================== محرك النتائج (منقول ومُتحقَّق من نموذج الحساب التلقائي المعتمد) ==================
+function computeResults(){
+  const stage = appState.stage;
+  const stageItems = ITEMS.filter(it=>it.stage===stage);
+  const domains = stageDomains(stage);
+  const domainPts = {}, domainMaxW = {};
+  domains.forEach(d=>{ domainPts[d]=0; domainMaxW[d]=0; });
+  let giftedSum=0, giftedMax=0, basicSum=0, basicMax=0;
+  stageItems.forEach(it=>{
+    const score = appState.answers[it.code] ?? 0;
+    const dk = domainKey(it.domain);
+    domainPts[dk] += it.w*score; domainMaxW[dk] += it.w;
+    if(it.type==='موهبة'){ giftedSum += score; giftedMax += 3; }
+    else { basicSum += score; basicMax += 3; }
+  });
+  const domainPct = {};
+  domains.forEach(d=> domainPct[d] = domainMaxW[d] ? (domainPts[d]/(domainMaxW[d]*3)*100) : 0);
+  const giftedPct = giftedMax ? (giftedSum/giftedMax*100) : 0;
+  const paiPct = basicMax ? (basicSum/basicMax*100) : 0;
+  const pctValues = Object.values(domainPct);
+  const mean = pctValues.reduce((a,b)=>a+b,0)/pctValues.length;
+  const variance = pctValues.reduce((a,b)=>a+Math.pow(b-mean,2),0)/pctValues.length;
+  const stdev = Math.sqrt(variance);
+  const dbi = mean ? (stdev/mean) : 0;
+  const dbiLabel = dbi<0.1?'متوازن':dbi<0.25?'خفيف':dbi<0.5?'معتدل':'حاد';
+  let classification;
+  if(paiPct>=95 && paiPct<=100 && giftedPct>=90) classification='موهبة استثنائية';
+  else if(paiPct>=85 && paiPct<=94 && giftedPct>=75 && giftedPct<=89) classification='موهبة واضحة';
+  else if(paiPct>=75 && paiPct<=84 && giftedPct>=60 && giftedPct<=74) classification='نمو متقدم';
+  else if(paiPct>=65 && paiPct<=74 && giftedPct<60) classification='نمو طبيعي';
+  else if(paiPct>=50 && paiPct<=64) classification='يحتاج متابعة';
+  else if(paiPct>=35 && paiPct<=49) classification='تأخر بسيط';
+  else if(paiPct<35) classification='تأخر واضح';
+  else classification='غير مطابق لأي حالة موصوفة — نمط غير معتاد، يحتاج مراجعة يدوية';
+  return { domainPct, giftedPct, paiPct, dbi, dbiLabel, classification };
+}
+
+const INTERPRETATIONS = {
+  'موهبة استثنائية':'أداء متفوق جداً وثابت عبر كل المجالات تقريباً، مع مؤشرات موهبة قوية — يستدعي تحويلاً لتقييم موهبة متخصص وإثراءً مكثفاً.',
+  'موهبة واضحة':'أداء قوي في أغلب المجالات مع إشارات موهبة واضحة في عدد منها — يُستحسن برنامج إثرائي موجَّه.',
+  'نمو متقدم':'أداء أعلى من المتوقع لعمره في عدد من المجالات، مع بعض إشارات التميز — تابعي هذا التقدم ودعّميه.',
+  'نمو طبيعي':'أداء يتوافق مع المتوقع لعمره في أغلب المجالات، دون إشارات تستدعي قلقاً.',
+  'يحتاج متابعة':'أداء أقل من المتوقع في عدد من المجالات — يُنصح بمتابعة دورية أقرب ودعم موجَّه للمجالات الأضعف.',
+  'تأخر بسيط':'أداء أقل من المتوقع لعمره بشكل ملحوظ في عدة مجالات — يُستحسن تدخل مبكر مركَّز.',
+  'تأخر واضح':'أداء أقل من المتوقع لعمره بفارق كبير عبر أغلب المجالات — يستدعي إحالة فورية لتقييم متخصص شامل وخطة تدخل.',
+  'غير مطابق لأي حالة موصوفة — نمط غير معتاد، يحتاج مراجعة يدوية':'مزيج المؤشرات في هذه الحالة لا يطابق أياً من الأنماط السبعة المعروفة (مثال: تفاوت حاد وغير معتاد بين الأداء الأساسي ومؤشر الموهبة) — يحتاج مراجعة الأخصائي مباشرة بدل تصنيف تلقائي.'
+};
+
+let chartInstance=null;
+function showResults(){
+  const r = computeResults();
+  document.getElementById('step-assessment').classList.add('hidden');
+  document.getElementById('step-results').classList.remove('hidden');
+  document.getElementById('result-classification').textContent = r.classification;
+  document.getElementById('result-interpretation').textContent = INTERPRETATIONS[r.classification] || '';
+  document.getElementById('tech-details').innerHTML = `
+    <div class="flex justify-between border-b pb-1"><span>مؤشر الأداء الفعلي PAI</span><b>${r.paiPct.toFixed(1)}%</b></div>
+    <div class="flex justify-between border-b pb-1"><span>مؤشر الموهبة</span><b>${r.giftedPct.toFixed(1)}%</b></div>
+    <div class="flex justify-between border-b pb-1"><span>مؤشر التباين البيني DBI</span><b>${r.dbi.toFixed(3)} (${r.dbiLabel})</b></div>
+    <div class="flex justify-between"><span>رمز الحالة</span><b style="direction:ltr">${appState.childCode||'—'}</b></div>
+  `;
+  const labels = Object.keys(r.domainPct), data = Object.values(r.domainPct).map(v=>v.toFixed(1));
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(document.getElementById('domainChart'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'النسبة %', data, backgroundColor:'#1A9E96' }] },
+    options:{ indexAxis:'y', scales:{ x:{ max:100 } }, plugins:{ legend:{display:false} } }
+  });
+}
+</script>
+</body>
+</html>
