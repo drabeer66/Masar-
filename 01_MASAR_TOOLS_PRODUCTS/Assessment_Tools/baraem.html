@@ -124,6 +124,7 @@
 
         <!-- ================= STEP 3: ASSESSMENT ================= -->
         <div id="step-assessment" class="hidden space-y-6">
+            <div id="sync-banner" class="hidden w-full text-center py-3 rounded-xl font-bold text-sm"></div>
             <div class="baraem-card flex flex-wrap justify-between items-center gap-2">
                 <div>
                     <h2 id="display-name" class="font-bold text-xl text-green-800"></h2>
@@ -761,11 +762,13 @@
 
         function updateSyncStatus(state, detail){
             const el = document.getElementById('sync-status');
-            if(!el) return;
-            el.classList.remove('hidden');
-            if(state==='ok'){ el.textContent='☁️ محفوظ'; el.style.color='#0e6b65'; }
-            else if(state==='saving'){ el.textContent='⏳ جارٍ الحفظ...'; el.style.color='#888'; }
-            else { el.textContent='⚠️ لم يُحفَظ: ' + (detail||'خطأ غير معروف'); el.style.color='#c0392b'; }
+            const banner = document.getElementById('sync-banner');
+            let text, color, bg;
+            if(state==='ok'){ text='☁️ تم الحفظ في قاعدة البيانات بنجاح'; color='#0e6b65'; bg='#e8f8f5'; }
+            else if(state==='saving'){ text='⏳ جارٍ الحفظ...'; color='#666'; bg='#f5f5f5'; }
+            else { text='⚠️ لم يُحفَظ في قاعدة البيانات — السبب: ' + (detail||'خطأ غير معروف'); color='#c0392b'; bg='#fdecea'; }
+            if(el){ el.textContent=text; el.style.color=color; el.classList.remove('hidden'); }
+            if(banner){ banner.textContent=text; banner.style.color=color; banner.style.background=bg; banner.style.border='1px solid '+color; banner.classList.remove('hidden'); }
         }
 
         function generateChildCode() {
