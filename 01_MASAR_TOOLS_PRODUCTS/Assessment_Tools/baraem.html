@@ -42,7 +42,7 @@
                 </div>
             </div>
             <span id="code-badge" class="hidden text-xs bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full font-bold border border-blue-200" style="direction:ltr" title="احتفظي بهذا الرمز لاستكمال التقييم لاحقاً — لا نطلب أي اسم حقيقي أو بيانات تعريفية"></span>
-            <span class="text-xs bg-green-50 text-green-700 px-4 py-1.5 rounded-full font-bold border border-green-200">نسخة الأمهات</span>
+            <span class="text-xs bg-green-50 text-green-700 px-4 py-1.5 rounded-full font-bold border border-green-200">🌱 براعم</span>
         </div>
     </header>
 
@@ -168,13 +168,34 @@
 
             <!-- التوقيع المطلوب -->
             <div class="footer-credit">
-                🌱 تطوير: <strong>د. عبير جفال</strong> - استشاري الطفولة المبكرة<br>
+                🌱 إعداد: <strong>د. عبير جفال</strong> - استشاري الطفولة المبكرة<br>
+                <span class="text-xs text-gray-500">للتواصل والاستفسار: jaffalabeer@yahoo.com | واتساب: +96277517745</span><br>
                 <span class="text-xs text-gray-400">© جميع الحقوق محفوظة 2026</span>
             </div>
 
             <div class="flex gap-3 flex-wrap">
                 <button onclick="window.print()" class="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-xl text-sm">🖨️ طباعة</button>
+                <button onclick="showFeedbackForm()" class="flex-1 bg-teal-100 hover:bg-teal-200 text-teal-800 font-bold py-3 rounded-xl text-sm">💬 شاركينا رأيك بالتطبيق</button>
                 <button onclick="resetToHome()" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 font-bold py-3 rounded-xl text-sm">🔄 تقييم جديد</button>
+            </div>
+        </div>
+
+        <!-- ===== شاشة تقييم التطبيق ===== -->
+        <div id="step-feedback" class="hidden space-y-4">
+            <div class="baraem-card space-y-5">
+                <div class="text-center space-y-1">
+                    <h2 class="text-xl font-black text-green-800">رأيك يهمّنا 💚</h2>
+                    <p class="text-sm text-gray-500">نشكرك على استخدام تطبيق براعم مع طفلك. رأيك يساعدنا كثيراً في تطويره، ولن يأخذ منك أكثر من دقيقة واحدة.</p>
+                </div>
+                <div id="feedback-questions" class="space-y-5"></div>
+                <button onclick="submitFeedback()" class="btn-primary w-full">إرسال رأيي</button>
+                <button onclick="document.getElementById('step-feedback').classList.add('hidden'); document.getElementById('step-results').classList.remove('hidden');" class="w-full text-center text-xs text-gray-400 underline">تخطي والعودة للتقرير</button>
+            </div>
+            <div id="feedback-thanks" class="hidden baraem-card text-center py-10" style="background:linear-gradient(135deg,#e8f8f5,#fef9e7);">
+                <p class="text-2xl mb-2">🌸 🌟 🌸</p>
+                <p class="text-lg font-bold" style="color:#0e6b65;">شكراً من القلب على وقتك واهتمامك، وعلى ثقتك باستخدام براعم مع طفلك.</p>
+                <p class="text-sm mt-2" style="color:#8a6d3b;">ملاحظاتك ستساهم مباشرة في تطوير التطبيق نحو الأفضل 🙏</p>
+                <button onclick="resetToHome()" class="btn-secondary mt-5">إغلاق</button>
             </div>
         </div>
 
@@ -724,9 +745,9 @@
         // وُجد) يُستخدم للعرض على الشاشة فقط، ولا يُرسَل أو يُخزَّن أبداً.
         // ================================================================
         const firebaseConfig = {
-            apiKey: "ضعي_مفتاحك_هنا",
-            authDomain: "ضعي_مشروعك_هنا.firebaseapp.com",
-            projectId: "ضعي_معرف_مشروعك_هنا",
+            apiKey: "AIzaSyBRE7rUkWF43N_unvTiuUwZ7-HtAVDVJAk",
+            authDomain: "masar-5caca.firebaseapp.com",
+            projectId: "masar-5caca",
         };
         let db = null;
         try {
@@ -879,7 +900,69 @@
             }
         }
 
+        const FEEDBACK_QUESTIONS = [
+            { id:'relation', q:'ما علاقتك بالطفل الذي رافقتِه في هذا التقييم؟', opts:['أم','أب','جدة أو جد','معلمة روضة','أخصائية','أخرى'] },
+            { id:'ease', q:'كيف كانت تجربتك في استخدام التطبيق؟', opts:['ممتازة','جيدة جداً','جيدة','مقبولة','صعبة'] },
+            { id:'clarity', q:'هل كانت الأسئلة داخل التطبيق سهلة الفهم بالنسبة لك؟', opts:['ممتاز','جيد جداً','جيد','مقبول','غير واضح أحياناً'] },
+            { id:'time', q:'كم من الوقت أخذ منك إكمال التقييم؟', opts:['أقل من 5 دقائق','بين 5 و15 دقيقة','بين 15 و30 دقيقة','أكثر من 30 دقيقة'] },
+            { id:'result_quality', q:'هل شعرتِ أن النتيجة والتوصيات كانت مفيدة وواضحة؟', opts:['ممتازة','جيدة جداً','جيدة','مقبولة','غير واضحة'] },
+            { id:'new_insight', q:'هل أضافت لك هذه النتيجة فهماً جديداً عن طفلك؟', opts:['نعم بشكل كبير','نعم قليلاً','لا'] },
+            { id:'recommend', q:'هل تحبين أن يستخدم أشخاص آخرون يهمّهم أمر أطفالهم هذا التطبيق؟', opts:['نعم','ربما','لا'] },
+        ];
+        let feedbackAnswers = {};
+        function showFeedbackForm(){
+            document.getElementById('step-results').classList.add('hidden');
+            document.getElementById('step-feedback').classList.remove('hidden');
+            document.getElementById('feedback-thanks').classList.add('hidden');
+            feedbackAnswers = {};
+            const c = document.getElementById('feedback-questions');
+            c.innerHTML = '';
+            FEEDBACK_QUESTIONS.forEach(fq=>{
+                const wrap = document.createElement('div');
+                const label = document.createElement('p');
+                label.className='text-sm font-bold text-gray-700 mb-2';
+                label.textContent = fq.q;
+                wrap.appendChild(label);
+                const optsWrap = document.createElement('div');
+                optsWrap.className='flex flex-wrap gap-2';
+                fq.opts.forEach(opt=>{
+                    const b = document.createElement('button');
+                    b.type='button';
+                    b.className='text-xs px-3 py-2 rounded-full border border-gray-300 bg-white hover:bg-green-50';
+                    b.textContent = opt;
+                    b.onclick = ()=>{
+                        feedbackAnswers[fq.id] = opt;
+                        [...optsWrap.children].forEach(x=>{ x.className='text-xs px-3 py-2 rounded-full border border-gray-300 bg-white hover:bg-green-50'; });
+                        b.className='text-xs px-3 py-2 rounded-full border-2 border-green-600 bg-green-600 text-white font-bold';
+                    };
+                    optsWrap.appendChild(b);
+                });
+                wrap.appendChild(optsWrap);
+                c.appendChild(wrap);
+            });
+            const noteWrap = document.createElement('div');
+            const noteLabel = document.createElement('p');
+            noteLabel.className='text-sm font-bold text-gray-700 mb-2';
+            noteLabel.textContent='ملاحظات أخرى تودّين مشاركتها معنا (اختياري)';
+            noteWrap.appendChild(noteLabel);
+            const textarea = document.createElement('textarea');
+            textarea.id='feedback-notes';
+            textarea.rows=3;
+            textarea.className='w-full p-3 border rounded-xl text-sm';
+            noteWrap.appendChild(textarea);
+            c.appendChild(noteWrap);
+        }
+        function submitFeedback(){
+            const notes = document.getElementById('feedback-notes').value.trim();
+            const payload = { ...feedbackAnswers, notes, childCode: appState.childCode || null, submittedAt: (db ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()) };
+            if(db){
+                db.collection('baraem_feedback').add(payload).catch(err=>console.warn('تعذّر إرسال التقييم:', err.message));
+            }
+            document.querySelector('#step-feedback .baraem-card').classList.add('hidden');
+            document.getElementById('feedback-thanks').classList.remove('hidden');
+        }
         function setAnswer(key, value) { appState.answers[key] = value; renderQuestions(); saveProgress(); }
+
         function navigateDomain(dir) { appState.currentDomainIndex += dir; renderQuestions(); window.scrollTo({top:0,behavior:'smooth'}); }
 
         // ================================================================
