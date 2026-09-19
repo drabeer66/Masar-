@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>براعم - التقييم النمائي المتكامل</title>
+    <meta name="description" content="تقييم نمائي مجاني لطفلكِ من الولادة حتى ست سنوات: أسئلة بنقرة واحدة، وتقرير عن مجالات النمو وأنشطة مناسبة لعمره. بلا اسم ولا بيانات تعريفية.">
+    <meta name="theme-color" content="#2e7d32">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ar_AR">
+    <meta property="og:site_name" content="براعم — مسار">
+    <meta property="og:title" content="براعم: تقييم نمائي مجاني لطفلكِ من 0 إلى 6 سنوات">
+    <meta property="og:description" content="أسئلة بنقرة واحدة، وتقرير عن مجالات نمو طفلكِ وأنشطة مناسبة لعمره. بلا اسم ولا بيانات تعريفية.">
+    <meta property="og:url" content="https://drabeer66.github.io/Masar-/01_MASAR_TOOLS_PRODUCTS/Assessment_Tools/baraem.html">
+    <meta property="og:image" content="https://drabeer66.github.io/Masar-/01_MASAR_TOOLS_PRODUCTS/Assessment_Tools/baraem-og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -30,6 +42,8 @@
         .footer-credit { border-top: 2px dashed #c8e6c9; padding-top: 1.5rem; margin-top: 2rem; text-align: center; color: #388e3c; font-weight: 600; font-size: 0.9rem; }
         body { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
         input, textarea { -webkit-user-select: text; -moz-user-select: text; user-select: text; }
+    .no-print{}
+        @media print { .no-print{display:none !important;} #progress-card{display:none !important;} }
     </style>
 </head>
 <body>
@@ -60,6 +74,8 @@
                     أنتِ الخبيرة الأولى بطفلكِ. هذا التطبيق هنا ليُضيء لكِ الطريق، ليساعدكِ على فهم ما تلاحظينه بعمق، 
                     ويكشف لكِ عن إمكانات طفلكِ الخفية في مرحلة عمره الذهبية.
                 </p>
+                <p class="text-sm text-green-800 font-bold">📋 بين 35 و49 سؤالاً حسب عمر طفلكِ، وكل سؤال بنقرة واحدة. يُحفظ تقدّمكِ تلقائياً برمز خاص، فتستطيعين التوقف والعودة لاحقاً.</p>
+                <p class="text-xs text-gray-500 max-w-xl mx-auto leading-relaxed">براعم أداة إرشادية للأهل، وليست تشخيصاً ولا تغني عن تقييم مختص. وإن أقلقكِ شيء في نمو طفلكِ فاستشيري طبيب الأطفال أو مختصاً في النمو.</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-right mt-4">
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-green-100 flex items-start gap-3">
                         <span class="text-2xl">🔍</span>
@@ -112,14 +128,16 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">أو اختاري المرحلة يدوياً</label>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">إن لم تعرفي التاريخ بالضبط، اختاري مرحلة عمره</label>
                     <select id="manual-stage" class="w-full p-3 border border-gray-200 rounded-xl bg-white">
+                        <option value="">— اختاري مرحلة عمر طفلكِ —</option>
                         <option value="1">A1 (0-6 أشهر)</option><option value="2">A2 (6-12 شهراً)</option>
                         <option value="3">B1 (12-18 شهراً)</option><option value="4">B2 (18-24 شهراً)</option>
                         <option value="5">C1 (24-36 شهراً)</option><option value="6">C2 (36-48 شهراً)</option>
                         <option value="7">C3 (48-60 شهراً)</option><option value="8">C4 (60-72 شهراً)</option>
                     </select>
                 </div>
+                <p id="kid-error" class="hidden text-sm text-red-600 font-bold"></p>
                 <button onclick="startAssessment()" class="btn-primary w-full">ابدأي التقييم →</button>
             </div>
         </div>
@@ -134,7 +152,11 @@
                 </div>
                 <button onclick="resetToHome()" class="text-xs bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full font-medium">↩️ تغيير البيانات</button>
             </div>
-            <div class="flex overflow-x-auto gap-2 pb-2" id="domain-tabs"></div>
+            <div class="baraem-card py-3 px-4" id="progress-card">
+                    <div class="flex justify-between text-xs font-bold text-green-800 mb-2"><span id="progress-text"></span><span id="progress-pct"></span></div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5"><div id="progress-bar" class="bg-green-600 h-2.5 rounded-full" style="width:0%;transition:width .3s"></div></div>
+                </div>
+                <div class="flex overflow-x-auto gap-2 pb-2" id="domain-tabs"></div>
             <div id="incomplete-banner" class="hidden w-full text-center py-3 rounded-xl font-bold text-sm bg-amber-100 text-amber-800 border border-amber-300"></div>
             <div id="questions-container" class="space-y-4"></div>
             <div class="flex justify-between items-center pt-4">
@@ -171,6 +193,22 @@
                 <div id="recommendations-container" class="space-y-4 text-sm"></div>
             </div>
 
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed p-4 rounded-2xl">
+                هذا التقرير إرشادي للأهل وليس تشخيصاً، ولا يغني عن تقييم مختص. إن أقلقكِ شيء في نمو طفلكِ، فاستشيري طبيب الأطفال أو مختصاً في النمو.
+            </div>
+
+            <div class="baraem-card space-y-3 no-print" id="contact-card">
+                <h3 class="font-bold text-gray-700 border-r-4 border-teal-500 pr-2">📬 ابقي على تواصل (اختياري)</h3>
+                <div id="contact-form" class="space-y-3">
+                    <p class="text-sm text-gray-600 leading-relaxed">إن رغبتِ، اتركي بريدكِ لنُعلمكِ عند توفر أدوات وتقارير جديدة للأهل. بريدكِ لا يُربط بإجابات طفلكِ ولا برمزه.</p>
+                    <input type="email" id="contact-email" dir="ltr" placeholder="name@example.com" class="w-full p-3 border border-gray-200 rounded-xl text-left">
+                    <label class="flex items-start gap-2 text-xs text-gray-600"><input type="checkbox" id="contact-consent" class="mt-1"><span>أوافق على أن تصلني رسائل عن براعم وأدوات مسار التربوية، ويمكنني طلب حذف بريدي في أي وقت بمراسلة د. عبير جفال على البريد المذكور أدناه.</span></label>
+                    <p id="contact-error" class="hidden text-xs text-red-600 font-bold"></p>
+                    <button id="contact-btn" onclick="submitContact()" class="btn-primary w-full">تسجيل بريدي</button>
+                </div>
+                <p id="contact-thanks" class="hidden text-sm font-bold text-teal-800 text-center">شكراً لكِ 🌸 سنراسلكِ عند توفر جديد.</p>
+            </div>
+
             <!-- التوقيع المطلوب -->
             <div class="footer-credit">
                 🌱 إعداد: <strong>د. عبير جفال</strong> - استشاري الطفولة المبكرة<br>
@@ -181,6 +219,7 @@
             <div class="flex gap-3 flex-wrap">
                 <button onclick="window.print()" class="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-xl text-sm">🖨️ طباعة</button>
                 <button onclick="showFeedbackForm()" class="flex-1 bg-teal-100 hover:bg-teal-200 text-teal-800 font-bold py-3 rounded-xl text-sm">💬 شاركينا رأيك بالتطبيق</button>
+                <button onclick="shareBaraem()" class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-3 rounded-xl text-sm no-print">📤 شاركي براعم مع أم أخرى</button>
                 <button onclick="resetToHome()" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 font-bold py-3 rounded-xl text-sm">🔄 تقييم جديد</button>
             </div>
         </div>
@@ -765,6 +804,113 @@
             } else { dbInitError = 'لم تُدرَج بيانات Firebase بعد'; }
         } catch (e) { dbInitError = e.message; console.warn('Firestore غير مُفعَّل بعد:', e.message); }
 
+
+        // ================================================================
+        // 3.6 حزمة J2026091902: عدّادات مجهولة، تقدّم، مشاركة، بريد اختياري
+        // ملاحظات خصوصية: لا يُربط البريد بأي رمز طفل ولا بإجاباته،
+        // ولا تُضاف مجموعة baraem_contacts إلى ملف المزامنة العام أبداً.
+        // ================================================================
+        const APP_VERSION = 'J2026091902';
+        const MAX_AGE_MONTHS = 72;
+        const SRC = (function(){
+            try { return (new URLSearchParams(location.search).get('src') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20) || 'direct'; }
+            catch (e) { return 'direct'; }
+        })();
+        const _completedCodes = {};
+
+        function trackEvent(name){
+            try {
+                if (!db) return;
+                const day = new Date().toISOString().slice(0, 10);
+                const f = {};
+                f[name] = firebase.firestore.FieldValue.increment(1);
+                f['src_' + SRC + '_' + name] = firebase.firestore.FieldValue.increment(1);
+                f.appVersion = APP_VERSION;
+                db.collection('baraem_stats').doc(day).set(f, { merge: true })
+                  .catch(err => console.warn('تعذّر تسجيل العدّاد (' + name + '):', err.message));
+            } catch (e) { console.warn('تعذّر تسجيل العدّاد (' + name + '):', e.message); }
+        }
+
+        function trackOpenOnce(){
+            try { if (sessionStorage.getItem('baraem_opened')) return; sessionStorage.setItem('baraem_opened', '1'); } catch (e) {}
+            trackEvent('opens');
+        }
+
+        function updateProgress(){
+            const domains = getDomainsForStage(appState.stage);
+            let total = 0, done = 0;
+            domains.forEach(d => getQuestionsForStage(appState.stage, d).forEach((_, i) => { total++; if (appState.answers[d + '_' + i]) done++; }));
+            const pct = total ? Math.round(done / total * 100) : 0;
+            const t = document.getElementById('progress-text');
+            const p = document.getElementById('progress-pct');
+            const b = document.getElementById('progress-bar');
+            if (t) t.textContent = 'أجبتِ عن ' + done + ' من ' + total + ' سؤالاً' + (total - done > 0 ? ' — بقي ' + (total - done) : ' — أحسنتِ، اكتملت الأسئلة');
+            if (p) p.textContent = pct + '%';
+            if (b) b.style.width = pct + '%';
+        }
+
+        function markCompleted(){
+            if (!appState.childCode || _completedCodes[appState.childCode]) return;
+            _completedCodes[appState.childCode] = true;
+            trackEvent('completes');
+            if (db) {
+                db.collection('baraem_responses').doc(appState.childCode).set({
+                    completed: true,
+                    completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    appVersion: APP_VERSION
+                }, { merge: true }).catch(err => console.warn('تعذّر تسجيل الإكمال:', err.message));
+            }
+        }
+
+        function showToast(msg){
+            let el = document.getElementById('baraem-toast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'baraem-toast';
+                el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2)';
+                document.body.appendChild(el);
+            }
+            el.textContent = msg; el.style.display = 'block';
+            clearTimeout(showToast._t); showToast._t = setTimeout(() => { el.style.display = 'none'; }, 2500);
+        }
+
+        function shareBaraem(){
+            const url = location.origin + location.pathname + '?src=share';
+            const text = 'جرّبتُ براعم: تقييم نمائي مجاني لطفلكِ من 0 إلى 6 سنوات، بلا اسم ولا بيانات تعريفية.';
+            trackEvent('shares');
+            if (navigator.share) { navigator.share({ title: 'براعم', text: text, url: url }).catch(() => {}); return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text + ' ' + url).then(() => showToast('تم نسخ الرابط، أرسليه لمن تحبين')).catch(() => window.prompt('انسخي الرابط:', url));
+                return;
+            }
+            window.prompt('انسخي الرابط:', url);
+        }
+
+        function submitContact(){
+            const emailEl = document.getElementById('contact-email');
+            const errEl = document.getElementById('contact-error');
+            const btn = document.getElementById('contact-btn');
+            const email = emailEl.value.trim();
+            const showErr = (t) => { errEl.textContent = '⚠️ ' + t; errEl.classList.remove('hidden'); if (btn) { btn.disabled = false; btn.textContent = 'تسجيل بريدي'; } };
+            errEl.classList.add('hidden');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 200) { showErr('البريد الإلكتروني غير صحيح، راجعيه من فضلكِ.'); return; }
+            if (!document.getElementById('contact-consent').checked) { showErr('نحتاج موافقتكِ الصريحة لنراسلكِ.'); return; }
+            if (!db) { showErr('تعذّر التسجيل الآن، حاولي لاحقاً.'); return; }
+            btn.disabled = true; btn.textContent = 'جارٍ التسجيل...';
+            db.collection('baraem_contacts').add({
+                email: email,
+                consent: true,
+                consentVersion: 'v1',
+                appVersion: APP_VERSION,
+                src: SRC,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                trackEvent('contacts');
+                document.getElementById('contact-form').classList.add('hidden');
+                document.getElementById('contact-thanks').classList.remove('hidden');
+            }).catch(err => { console.warn('تعذّر حفظ البريد:', err.message); showErr('تعذّر تسجيل بريدكِ الآن، حاولي لاحقاً. (' + err.message + ')'); });
+        }
+
         function updateSyncStatus(state, detail){
             const el = document.getElementById('sync-status');
             const banner = document.getElementById('sync-banner');
@@ -800,11 +946,26 @@
                     stage: appState.stage,
                     currentDomainIndex: appState.currentDomainIndex,
                     answers: appState.answers,
+                    appVersion: APP_VERSION,
+                    src: SRC,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     // ملاحظة: لا يُرسَل هنا أي اسم أو تاريخ ميلاد أو أي بيانات تعريفية — الرمز فقط
                 }, { merge: true })
                 .then(() => updateSyncStatus('ok'))
-                .catch(err => { console.warn('تعذّر الحفظ السحابي:', err.message); updateSyncStatus('error', err.message); });
+                .catch(err => {
+                    console.warn('تعذّر الحفظ السحابي:', err.message);
+                    if (/permission|insufficient/i.test(err.message || '')) {
+                        // احتياط: إن منعت قواعد قاعدة البيانات الحقول الجديدة، نعيد الحفظ بالحقول الأصلية فقط كي لا يضيع تقدّم الأم
+                        db.collection('baraem_responses').doc(appState.childCode).set({
+                            stage: appState.stage,
+                            currentDomainIndex: appState.currentDomainIndex,
+                            answers: appState.answers,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true })
+                        .then(() => { updateSyncStatus('ok'); console.warn('حُفظ بالحقول الأصلية فقط — راجعي قواعد قاعدة البيانات.'); })
+                        .catch(err2 => { console.warn('تعذّر الحفظ السحابي:', err2.message); updateSyncStatus('error', err2.message); });
+                    } else { updateSyncStatus('error', err.message); }
+                });
             }, 600); // تأخير بسيط لتقليل عدد عمليات الكتابة
         }
 
@@ -847,6 +1008,16 @@
             const name = document.getElementById('kid-name').value.trim() || 'طفلي';
             const dob = document.getElementById('kid-dob').value;
             const manual = parseInt(document.getElementById('manual-stage').value);
+            const manualRaw = document.getElementById('manual-stage').value;
+            const kidErr = document.getElementById('kid-error');
+            const showKidErr = (t) => { kidErr.textContent = '⚠️ ' + t; kidErr.classList.remove('hidden'); };
+            kidErr.classList.add('hidden');
+            if (!dob && !manualRaw) { showKidErr('أدخلي تاريخ ميلاد طفلكِ، أو اختاري مرحلة عمره، ليعرض التطبيق الأسئلة المناسبة له.'); return; }
+            if (dob) {
+                const ageMonths = (new Date() - new Date(dob)) / (1000*60*60*24*30.44);
+                if (ageMonths < 0) { showKidErr('تاريخ الميلاد بعد تاريخ اليوم، راجعي التاريخ من فضلكِ.'); return; }
+                if (ageMonths > MAX_AGE_MONTHS) { showKidErr('براعم مخصصة للأطفال من الولادة حتى ست سنوات.'); return; }
+            }
             let stage = dob ? getStageFromDate(dob) : manual;
             document.getElementById('manual-stage').value = stage;
             appState.kidName = name; appState.stage = stage; appState.currentDomainIndex = 0; appState.answers = {};
@@ -857,6 +1028,7 @@
             document.getElementById('step-assessment').classList.remove('hidden');
             showCodeBadge();
             saveProgress();
+            trackEvent('starts');
             renderTabs(); renderQuestions();
         }
 
@@ -869,7 +1041,9 @@
                 if(!meta) return;
                 const btn = document.createElement('button');
                 btn.className = `flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${appState.currentDomainIndex===idx?'bg-green-600 text-white':'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'}`;
-                btn.innerHTML = `${meta.icon} ${meta.name}`;
+                const tabQs = getQuestionsForStage(appState.stage, domId);
+                const tabDone = tabQs.length > 0 && tabQs.every((_, qi) => appState.answers[`${domId}_${qi}`]);
+                btn.innerHTML = `${meta.icon} ${meta.name}${tabDone ? ' ✓' : ''}`;
                 btn.onclick = () => { appState.currentDomainIndex = idx; renderQuestions(); };
                 container.appendChild(btn);
             });
@@ -877,6 +1051,7 @@
 
         function renderQuestions() {
             renderTabs();
+            updateProgress();
             const domains = getDomainsForStage(appState.stage);
             const domainId = domains[appState.currentDomainIndex];
             const meta = DOMAINS.find(d=>d.id===domainId);
@@ -978,7 +1153,7 @@
         }
         function submitFeedback(){
             const notes = document.getElementById('feedback-notes').value.trim();
-            const payload = { ...feedbackAnswers, notes, childCode: appState.childCode || null, submittedAt: (db ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()) };
+            const payload = { ...feedbackAnswers, notes, childCode: appState.childCode || null, appVersion: APP_VERSION, submittedAt: (db ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()) };
             const btn = document.querySelector('#step-feedback button[onclick="submitFeedback()"]');
             const showThanks = () => {
                 document.querySelector('#step-feedback .baraem-card').classList.add('hidden');
@@ -1038,6 +1213,7 @@
                 return;
             }
             document.getElementById('incomplete-banner').classList.add('hidden');
+            markCompleted();
 
             const domains = getDomainsForStage(appState.stage);
             let scores = {};
@@ -1097,7 +1273,8 @@
             const data = domains.map(d => scores[d] || 0);
             const colors = data.map(v => v >= 75 ? '#2e7d32' : (v >= 50 ? '#f9a825' : '#c62828'));
 
-            new Chart(ctx, {
+            if (window.__baraemChart) { window.__baraemChart.destroy(); }
+            window.__baraemChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -1191,7 +1368,13 @@
             if(this.value) document.getElementById('manual-stage').value = getStageFromDate(this.value);
         });
 
-        console.log('✅ براعم V3 - مع الأسئلة الكاملة والرسم البياني (أعمدة).');
+        (function initExtras(){
+            const dobEl = document.getElementById('kid-dob');
+            if (dobEl) dobEl.max = new Date().toISOString().slice(0, 10);
+            trackOpenOnce();
+        })();
+
+        console.log('✅ براعم V3 - ' + APP_VERSION);
     </script>
 </body>
 </html>
