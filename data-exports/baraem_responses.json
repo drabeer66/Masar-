@@ -1,0 +1,537 @@
+[
+  {
+    "id": "BR-3KLS2",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789803601,
+      "_nanoseconds": 423000000
+    }
+  },
+  {
+    "id": "BR-4D9FT",
+    "stage": 2,
+    "currentDomainIndex": 6,
+    "answers": {
+      "cog_0": "does",
+      "cog_2": "does",
+      "cog_1": "does",
+      "cog_3": "does",
+      "cog_4": "does",
+      "cog_5": "does",
+      "cog_6": "does",
+      "cog_7": "does",
+      "cog_8": "tries",
+      "cog_9": "does",
+      "lan_0": "does",
+      "lan_1": "does",
+      "lan_2": "does",
+      "lan_3": "does",
+      "lan_4": "tries",
+      "lan_5": "not",
+      "lan_6": "not",
+      "lan_7": "tries",
+      "mot_0": "does",
+      "mot_1": "tries",
+      "mot_2": "does",
+      "mot_3": "does",
+      "mot_4": "does",
+      "mot_5": "does",
+      "mot_6": "tries",
+      "mot_7": "not",
+      "soc_0": "does",
+      "soc_1": "tries",
+      "soc_2": "does",
+      "soc_3": "not",
+      "soc_4": "not",
+      "soc_5": "does",
+      "adp_0": "does",
+      "adp_1": "does",
+      "adp_2": "does",
+      "adp_3": "not",
+      "adp_4": "does",
+      "mus_0": "not",
+      "mus_1": "not",
+      "mus_2": "does",
+      "mus_3": "not",
+      "mus_4": "does",
+      "mus_5": "not",
+      "mus_6": "does",
+      "env_0": "not",
+      "env_1": "does",
+      "env_2": "does",
+      "env_3": "does",
+      "env_4": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789761459,
+      "_nanoseconds": 745000000
+    }
+  },
+  {
+    "id": "BR-7RR4F",
+    "stage": 3,
+    "currentDomainIndex": 0,
+    "answers": {
+      "cog_0": "does",
+      "cog_1": "tries",
+      "cog_2": "does",
+      "cog_3": "does",
+      "cog_4": "not"
+    },
+    "updatedAt": {
+      "_seconds": 1789752268,
+      "_nanoseconds": 27000000
+    }
+  },
+  {
+    "id": "BR-7W6K2",
+    "stage": 2,
+    "currentDomainIndex": 1,
+    "answers": {
+      "cog_9": "does",
+      "cog_0": "does",
+      "cog_1": "not",
+      "cog_2": "does",
+      "cog_3": "does",
+      "cog_4": "tries",
+      "cog_5": "tries",
+      "cog_6": "tries",
+      "cog_7": "does",
+      "cog_8": "does",
+      "lan_0": "does",
+      "lan_1": "does",
+      "lan_2": "not",
+      "lan_3": "does",
+      "lan_4": "not",
+      "lan_5": "tries",
+      "lan_6": "not",
+      "lan_7": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789732514,
+      "_nanoseconds": 831000000
+    }
+  },
+  {
+    "id": "BR-8GRMQ",
+    "stage": 2,
+    "currentDomainIndex": 4,
+    "answers": {
+      "cog_0": "does",
+      "adp_0": "does",
+      "adp_1": "tries",
+      "adp_2": "does",
+      "adp_3": "not",
+      "adp_4": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789732181,
+      "_nanoseconds": 981000000
+    }
+  },
+  {
+    "id": "BR-CWBCW",
+    "stage": 2,
+    "currentDomainIndex": 6,
+    "answers": {
+      "cog_0": "does",
+      "cog_1": "tries",
+      "cog_2": "does",
+      "cog_3": "does",
+      "cog_4": "does",
+      "cog_5": "does",
+      "cog_6": "does",
+      "cog_7": "does",
+      "cog_8": "tries",
+      "cog_9": "not",
+      "lan_0": "does",
+      "lan_1": "does",
+      "lan_2": "does",
+      "lan_3": "does",
+      "lan_4": "does",
+      "lan_5": "does",
+      "lan_6": "does",
+      "lan_7": "does",
+      "mot_0": "does",
+      "mot_1": "does",
+      "mot_2": "does",
+      "mot_3": "does",
+      "mot_4": "does",
+      "mot_5": "does",
+      "mot_6": "does",
+      "mot_7": "does",
+      "soc_0": "does",
+      "soc_1": "tries",
+      "soc_2": "does",
+      "soc_3": "tries",
+      "soc_4": "tries",
+      "soc_5": "does",
+      "adp_0": "does",
+      "adp_1": "tries",
+      "adp_2": "does",
+      "adp_3": "tries",
+      "adp_4": "tries",
+      "mus_0": "does",
+      "mus_1": "does",
+      "mus_2": "does",
+      "mus_3": "tries",
+      "mus_4": "does",
+      "mus_5": "not",
+      "mus_6": "tries",
+      "env_0": "does",
+      "env_1": "does",
+      "env_2": "does",
+      "env_3": "tries",
+      "env_4": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789726572,
+      "_nanoseconds": 276000000
+    }
+  },
+  {
+    "id": "BR-E74UP",
+    "stage": 1,
+    "currentDomainIndex": 1,
+    "answers": {
+      "mus_0": "not",
+      "mus_1": "not",
+      "mus_2": "not",
+      "mus_3": "does",
+      "mus_4": "does",
+      "mus_5": "does",
+      "env_0": "does",
+      "env_1": "not",
+      "env_2": "does",
+      "env_3": "does",
+      "env_4": "does",
+      "cog_0": "not",
+      "cog_1": "tries",
+      "cog_2": "not",
+      "cog_3": "not",
+      "cog_4": "not",
+      "cog_5": "not",
+      "cog_6": "does",
+      "cog_7": "not",
+      "cog_8": "not",
+      "cog_9": "not",
+      "lan_0": "does",
+      "lan_1": "not",
+      "lan_2": "not",
+      "lan_3": "not",
+      "lan_4": "does",
+      "lan_5": "not",
+      "lan_6": "does",
+      "lan_7": "not"
+    },
+    "updatedAt": {
+      "_seconds": 1789717454,
+      "_nanoseconds": 216000000
+    }
+  },
+  {
+    "id": "BR-FURH8",
+    "stage": 6,
+    "currentDomainIndex": 6,
+    "answers": {
+      "cog_0": "does",
+      "cog_1": "does",
+      "cog_2": "tries",
+      "cog_3": "does",
+      "cog_4": "tries",
+      "cog_5": "does",
+      "cog_6": "tries",
+      "cog_7": "tries",
+      "lan_0": "does",
+      "lan_1": "does",
+      "lan_2": "does",
+      "lan_3": "does",
+      "lan_4": "tries",
+      "lan_5": "not",
+      "lan_6": "does",
+      "mot_0": "does",
+      "mot_1": "does",
+      "mot_2": "tries",
+      "mot_3": "not",
+      "mot_4": "tries",
+      "mot_5": "not",
+      "soc_0": "does",
+      "soc_1": "not",
+      "soc_2": "tries",
+      "soc_3": "tries",
+      "soc_4": "does",
+      "soc_5": "tries",
+      "adp_0": "not",
+      "adp_1": "tries",
+      "adp_2": "not",
+      "adp_3": "does",
+      "adp_4": "tries",
+      "mus_0": "not",
+      "mus_1": "tries",
+      "mus_2": "not",
+      "mus_3": "tries",
+      "mus_4": "tries",
+      "env_0": "does",
+      "env_1": "tries",
+      "env_2": "tries",
+      "env_3": "tries",
+      "env_4": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789752099,
+      "_nanoseconds": 738000000
+    }
+  },
+  {
+    "id": "BR-KJDXU",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789726967,
+      "_nanoseconds": 458000000
+    }
+  },
+  {
+    "id": "BR-LZXWA",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789815169,
+      "_nanoseconds": 761000000
+    }
+  },
+  {
+    "id": "BR-MTEYU",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789771408,
+      "_nanoseconds": 423000000
+    }
+  },
+  {
+    "id": "BR-N863N",
+    "stage": 8,
+    "currentDomainIndex": 6,
+    "answers": {
+      "cog_0": "does",
+      "cog_1": "does",
+      "cog_2": "does",
+      "cog_3": "tries",
+      "cog_4": "tries",
+      "cog_5": "tries",
+      "cog_6": "does",
+      "lan_0": "does",
+      "lan_1": "tries",
+      "lan_2": "not",
+      "lan_3": "does",
+      "lan_4": "does",
+      "mot_0": "does",
+      "mot_1": "does",
+      "mot_2": "does",
+      "mot_3": "does",
+      "soc_0": "does",
+      "soc_1": "tries",
+      "soc_2": "does",
+      "soc_3": "does",
+      "soc_4": "does",
+      "adp_0": "does",
+      "adp_1": "does",
+      "adp_2": "tries",
+      "adp_3": "does",
+      "mus_0": "not",
+      "mus_1": "tries",
+      "mus_2": "tries",
+      "mus_3": "tries",
+      "mus_4": "not",
+      "env_0": "does",
+      "env_1": "does",
+      "env_2": "does",
+      "env_3": "tries",
+      "env_4": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789727713,
+      "_nanoseconds": 714000000
+    }
+  },
+  {
+    "id": "BR-ND8NW",
+    "stage": 3,
+    "currentDomainIndex": 0,
+    "answers": {
+      "cog_0": "does",
+      "cog_1": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789657046,
+      "_nanoseconds": 34000000
+    }
+  },
+  {
+    "id": "BR-PF6NH",
+    "stage": 1,
+    "currentDomainIndex": 2,
+    "answers": {
+      "cog_0": "tries",
+      "cog_1": "does",
+      "cog_2": "does",
+      "cog_3": "does",
+      "cog_4": "does",
+      "cog_5": "does",
+      "cog_6": "does",
+      "cog_7": "does",
+      "cog_8": "does",
+      "cog_9": "does",
+      "lan_0": "tries",
+      "lan_1": "does",
+      "lan_2": "not",
+      "lan_3": "does",
+      "lan_4": "does",
+      "lan_5": "not",
+      "lan_6": "not",
+      "lan_7": "does",
+      "mot_0": "does",
+      "mot_2": "does",
+      "mot_3": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789727886,
+      "_nanoseconds": 102000000
+    }
+  },
+  {
+    "id": "BR-PXAAP",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789814829,
+      "_nanoseconds": 458000000
+    }
+  },
+  {
+    "id": "BR-QD4ZG",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789729001,
+      "_nanoseconds": 635000000
+    }
+  },
+  {
+    "id": "BR-QDHYW",
+    "stage": 1,
+    "answers": {
+      "lan_0": "does",
+      "lan_1": "tries",
+      "lan_2": "not",
+      "lan_3": "tries",
+      "lan_4": "does",
+      "lan_5": "tries",
+      "lan_6": "not",
+      "lan_7": "tries"
+    },
+    "currentDomainIndex": 2,
+    "updatedAt": {
+      "_seconds": 1789708214,
+      "_nanoseconds": 43000000
+    }
+  },
+  {
+    "id": "BR-RH82C",
+    "stage": 8,
+    "currentDomainIndex": 3,
+    "answers": {
+      "cog_0": "does",
+      "cog_1": "does",
+      "cog_2": "does",
+      "cog_4": "does",
+      "cog_3": "does",
+      "cog_5": "does",
+      "cog_6": "tries",
+      "lan_0": "does",
+      "lan_1": "does",
+      "lan_2": "does",
+      "lan_3": "does",
+      "lan_4": "does",
+      "mot_0": "does",
+      "mot_1": "does",
+      "mot_2": "does",
+      "mot_3": "does",
+      "soc_0": "does",
+      "soc_1": "does",
+      "soc_2": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789733032,
+      "_nanoseconds": 725000000
+    }
+  },
+  {
+    "id": "BR-SN6J5",
+    "stage": 2,
+    "currentDomainIndex": 1,
+    "answers": {
+      "lan_0": "tries",
+      "lan_1": "does",
+      "lan_2": "tries",
+      "lan_3": "does",
+      "lan_4": "tries",
+      "lan_5": "tries",
+      "lan_6": "not",
+      "lan_7": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789732010,
+      "_nanoseconds": 352000000
+    }
+  },
+  {
+    "id": "BR-W5Z32",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789716844,
+      "_nanoseconds": 600000000
+    }
+  },
+  {
+    "id": "BR-ZAJPW",
+    "stage": 1,
+    "answers": {},
+    "currentDomainIndex": 0,
+    "updatedAt": {
+      "_seconds": 1789708017,
+      "_nanoseconds": 808000000
+    }
+  },
+  {
+    "id": "BR-ZAY4C",
+    "stage": 1,
+    "currentDomainIndex": 0,
+    "answers": {
+      "cog_0": "does",
+      "cog_1": "does",
+      "cog_2": "does",
+      "cog_3": "does",
+      "cog_4": "does",
+      "cog_9": "does",
+      "cog_8": "does",
+      "cog_7": "does",
+      "cog_6": "does",
+      "cog_5": "does"
+    },
+    "updatedAt": {
+      "_seconds": 1789820092,
+      "_nanoseconds": 76000000
+    }
+  }
+]
