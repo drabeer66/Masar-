@@ -979,11 +979,28 @@
         function submitFeedback(){
             const notes = document.getElementById('feedback-notes').value.trim();
             const payload = { ...feedbackAnswers, notes, childCode: appState.childCode || null, submittedAt: (db ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()) };
-            if(db){
-                db.collection('baraem_feedback').add(payload).catch(err=>console.warn('تعذّر إرسال التقييم:', err.message));
+            const btn = document.querySelector('#step-feedback button[onclick="submitFeedback()"]');
+            const showThanks = () => {
+                document.querySelector('#step-feedback .baraem-card').classList.add('hidden');
+                document.getElementById('feedback-thanks').classList.remove('hidden');
+            };
+            const showError = (msg) => {
+                if (btn) { btn.disabled = false; btn.textContent = 'إرسال رأيي'; }
+                let errEl = document.getElementById('feedback-error');
+                if (!errEl) {
+                    errEl = document.createElement('p');
+                    errEl.id = 'feedback-error';
+                    errEl.className = 'text-xs text-red-600 text-center mt-2';
+                    document.querySelector('#step-feedback .baraem-card').appendChild(errEl);
+                }
+                errEl.textContent = '⚠️ تعذّر إرسال رأيك — تحققي من اتصال الإنترنت وحاولي مرة أخرى. (' + msg + ')';
+            };
+            if (btn) { btn.disabled = true; btn.textContent = 'جارٍ الإرسال...'; }
+            if (db) {
+                db.collection('baraem_feedback').add(payload).then(showThanks).catch(err => { console.warn('تعذّر إرسال التقييم:', err.message); showError(err.message); });
+            } else {
+                showError('الحفظ السحابي غير مُفعَّل في هذه النسخة');
             }
-            document.querySelector('#step-feedback .baraem-card').classList.add('hidden');
-            document.getElementById('feedback-thanks').classList.remove('hidden');
         }
         function setAnswer(key, value) { appState.answers[key] = value; renderQuestions(); saveProgress(); }
 
