@@ -1221,12 +1221,26 @@
 
             const domains = getDomainsForStage(appState.stage);
             let scores = {};
+            let scoresLimited = {}; // true لو المجال احتُسب على مهارات متوقعة فقط (أقل من كامل القائمة) بسبب عمر الطفل الدقيق
             let weakDomains = []; let strongDomains = [];
+            const range = STAGE_MONTH_RANGES[appState.stage];
+            const useAgeAdjustment = (typeof appState.ageInMonths === 'number') && range;
 
             domains.forEach(domId => {
                 const questions = getQuestionsForStage(appState.stage, domId);
-                let weightedSum=0, maxWeightedSum=0;
+                const N = questions.length;
+                let weightedSum=0, maxWeightedSum=0, includedCount=0;
+
                 questions.forEach((item, idx) => {
+                    // البيئي (env) بنود ظرفية عن بيئة المنزل، وليست مهارات تنمو تدريجياً بعمر الطفل داخل المرحلة — تُستثنى من التعديل العمري
+                    let includeItem = true;
+                    if (useAgeAdjustment && domId !== 'env' && N > 0) {
+                        const [start, end] = range;
+                        const expectedMonth = start + (idx / N) * (end - start);
+                        includeItem = expectedMonth <= appState.ageInMonths;
+                    }
+                    if (!includeItem) return;
+                    includedCount++;
                     const key = `${domId}_${idx}`;
                     const val = appState.answers[key] || 'not';
                     const weight = getWeightForType(item.type);
@@ -1237,8 +1251,10 @@
                     weightedSum += num * weight;
                     maxWeightedSum += 4 * weight;
                 });
+
                 const p = maxWeightedSum>0?Math.round((weightedSum/maxWeightedSum)*100):0;
                 scores[domId] = p;
+                scoresLimited[domId] = useAgeAdjustment && domId !== 'env' && includedCount < N;
                 if(p<50) weakDomains.push(domId);
                 if(p>=85) strongDomains.push(domId);
             });
@@ -1271,18 +1287,13 @@
             document.getElementById('step-results').classList.remove('hidden');
             document.getElementById('result-name-age').innerText = `${appState.kidName} - ${STAGES[appState.stage]}`;
 
-            // تنبيه تفسيري: إن كان الطفل في الثلث الأول من نطاق مرحلته العمرية، فمن الطبيعي عدم إتقان مهارات متأخرة النطاق بعد
+            // توضيح شفاف للمنهجية الجديدة: النتيجة الآن مبنية على المهارات المتوقعة لعمر الطفل الدقيق ضمن المرحلة، وليس كامل مهارات المرحلة
             const earlyNoteEl = document.getElementById('early-stage-note');
-            const range = STAGE_MONTH_RANGES[appState.stage];
-            if (typeof appState.ageInMonths === 'number' && range) {
-                const [start, end] = range;
-                const positionInRange = (appState.ageInMonths - start) / (end - start);
-                if (positionInRange <= (1/3)) {
-                    earlyNoteEl.innerHTML = `<p>💙 ملاحظة مهمة: طفلكِ في بداية هذه المرحلة العمرية (${STAGES[appState.stage]}) وليس في نهايتها. بعض المهارات المذكورة أدناه يُتوقَّع أن يتقنها الأطفال عادة قرب نهاية هذه المرحلة، فمن الطبيعي تماماً ألا يُظهرها طفلكِ بعد. لا تقلقي إن ظهرت له نسب منخفضة في بعض المجالات — أعيدي التقييم بعد شهر أو شهرين لصورة أدق.</p>`;
-                    earlyNoteEl.classList.remove('hidden');
-                } else {
-                    earlyNoteEl.classList.add('hidden');
-                }
+            const anyDomainLimited = Object.values(scoresLimited).some(v => v);
+            if (useAgeAdjustment && anyDomainLimited) {
+                const ageRounded = Math.round(appState.ageInMonths * 10) / 10;
+                earlyNoteEl.innerHTML = `<p>💙 احتسبنا نتيجة طفلكِ بناءً على المهارات المتوقعة لعمره الدقيق (${ageRounded} شهراً) ضمن هذه المرحلة العمرية — ولم نُدرج بعد مهارات متأخرة النطاق لم يحن وقتها بعد. لذلك النسبة التي تراها أدق من مقارنته بكامل مهارات المرحلة كاملة (${STAGES[appState.stage]}).</p>`;
+                earlyNoteEl.classList.remove('hidden');
             } else {
                 earlyNoteEl.classList.add('hidden');
             }
@@ -1348,7 +1359,8 @@
                 const meta = DOMAINS.find(d=>d.id===domId);
                 const p = scores[domId]||0;
                 const status = p>=75?'✅ متقدم':(p>=50?'🔄 في طور النمو':'❌ يحتاج دعماً');
-                scoresDiv.innerHTML += `<div class="flex justify-between border-b border-gray-100 py-2"><span class="font-medium">${meta.icon} ${meta.name}</span><span class="font-bold ${p>=75?'text-green-700':p>=50?'text-amber-700':'text-rose-700'}">${p}% ${status}</span></div>`;
+                const limitedTag = scoresLimited[domId] ? '<span class="text-[10px] text-blue-500 font-normal"> (لعمره الحالي)</span>' : '';
+                scoresDiv.innerHTML += `<div class="flex justify-between border-b border-gray-100 py-2"><span class="font-medium">${meta.icon} ${meta.name}${limitedTag}</span><span class="font-bold ${p>=75?'text-green-700':p>=50?'text-amber-700':'text-rose-700'}">${p}% ${status}</span></div>`;
             });
 
             // التوصيات
