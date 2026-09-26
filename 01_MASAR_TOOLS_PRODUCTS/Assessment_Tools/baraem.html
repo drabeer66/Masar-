@@ -177,6 +177,7 @@
             </div>
 
             <div id="early-stage-note" class="hidden baraem-card bg-blue-50 border-blue-200 text-blue-900 text-sm leading-relaxed"></div>
+            <div id="recheck-note" class="hidden baraem-card bg-amber-50 border-amber-300 text-amber-900 text-sm leading-relaxed"></div>
 
             <div class="baraem-card space-y-4">
                 <h3 class="font-bold text-gray-700 border-r-4 border-amber-500 pr-2">🔍 نمط النمو المكتشف</h3>
@@ -1223,6 +1224,7 @@
             let scores = {};
             let scoresLimited = {}; // true لو المجال احتُسب على مهارات متوقعة فقط (أقل من كامل القائمة) بسبب عمر الطفل الدقيق
             let weakDomains = []; let strongDomains = [];
+            let domainsNeedingRecheck = []; // مجالات سجّل فيها الطفل 3 إجابات "لا" متتالية — يُنصَح بإعادتها من فئة أقل
             const range = STAGE_MONTH_RANGES[appState.stage];
             const useAgeAdjustment = (typeof appState.ageInMonths === 'number') && range;
 
@@ -1230,8 +1232,14 @@
                 const questions = getQuestionsForStage(appState.stage, domId);
                 const N = questions.length;
                 let weightedSum=0, maxWeightedSum=0, includedCount=0;
+                let curConsecFails=0, maxConsecFails=0;
 
                 questions.forEach((item, idx) => {
+                    const key = `${domId}_${idx}`;
+                    const rawVal = appState.answers[key] || 'not';
+                    if (rawVal === 'not') { curConsecFails++; maxConsecFails = Math.max(maxConsecFails, curConsecFails); }
+                    else { curConsecFails = 0; }
+
                     // البيئي (env) بنود ظرفية عن بيئة المنزل، وليست مهارات تنمو تدريجياً بعمر الطفل داخل المرحلة — تُستثنى من التعديل العمري
                     let includeItem = true;
                     if (useAgeAdjustment && domId !== 'env' && N > 0) {
@@ -1241,8 +1249,7 @@
                     }
                     if (!includeItem) return;
                     includedCount++;
-                    const key = `${domId}_${idx}`;
-                    const val = appState.answers[key] || 'not';
+                    const val = rawVal;
                     const weight = getWeightForType(item.type);
                     let num = 0;
                     if(val==='does') num=3;
@@ -1257,6 +1264,7 @@
                 scoresLimited[domId] = useAgeAdjustment && domId !== 'env' && includedCount < N;
                 if(p<50) weakDomains.push(domId);
                 if(p>=85) strongDomains.push(domId);
+                if(domId !== 'env' && maxConsecFails >= 3) domainsNeedingRecheck.push(domId);
             });
 
             const overall = Object.values(scores).reduce((a,b)=>a+b,0)/domains.length;
@@ -1296,6 +1304,19 @@
                 earlyNoteEl.classList.remove('hidden');
             } else {
                 earlyNoteEl.classList.add('hidden');
+            }
+
+            // توصية إعادة تقييم من فئة عمرية أقل — تظهر فقط في نهاية التقرير، دون أي تدخّل أثناء الإجابة نفسها
+            const recheckNoteEl = document.getElementById('recheck-note');
+            if (domainsNeedingRecheck.length > 0 && appState.stage > 1) {
+                const prevStageLabel = STAGES[appState.stage - 1];
+                const domainNames = domainsNeedingRecheck.map(id => DOMAINS.find(d => d.id === id)?.name || id);
+                recheckNoteEl.innerHTML = `<p>🔎 <b>توصية:</b> لاحظنا أن طفلكِ لم يُظهر بعد المهارات المطلوبة في: <b>${domainNames.join('، ')}</b> ضمن هذه المرحلة العمرية.</p>
+                    <p class="mt-2">ننصحكِ بإعادة تقييم ${domainNames.length > 1 ? 'هذه المجالات' : 'هذا المجال'} تحديداً باختيار المرحلة السابقة (${prevStageLabel}) يدوياً من الشاشة الرئيسية، لتحصلي على صورة أدق.</p>
+                    <p class="mt-2 text-xs">وإن كان لديكِ شكوك إضافية تتجاوز هذا، يُستحسَن دائماً مراجعة أخصائي تطور الطفل للاطمئنان.</p>`;
+                recheckNoteEl.classList.remove('hidden');
+            } else {
+                recheckNoteEl.classList.add('hidden');
             }
 
             // --- الرسم البياني الجديد: أعمدة (Bar Chart) ---
